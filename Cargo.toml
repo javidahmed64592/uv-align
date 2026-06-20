@@ -1,0 +1,11 @@
+[package]
+name = "template_rust"
+version = "0.1.0"
+edition = "2024"
+repository = "https://github.com/javidahmed64592/template-rust"
+
+[dependencies]
+
+[profile.dist]
+inherits = "release"
+lto = "thin"
