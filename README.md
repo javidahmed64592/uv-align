@@ -2,7 +2,7 @@
 [![CI](https://img.shields.io/github/actions/workflow/status/javidahmed64592/uv-bump/ci.yml?branch=main&style=flat-square&label=CI&logo=github)](https://github.com/javidahmed64592/uv-bump/actions/workflows/ci.yml)
 [![Docs](https://img.shields.io/github/actions/workflow/status/javidahmed64592/uv-bump/docs.yml?branch=main&style=flat-square&label=Docs&logo=github)](https://github.com/javidahmed64592/uv-bump/actions/workflows/docs.yml)
 [![Release](https://img.shields.io/github/actions/workflow/status/javidahmed64592/uv-bump/release.yml?style=flat-square&label=Release&logo=github)](https://github.com/javidahmed64592/uv-bump/actions/workflows/release.yml)
-[![License: GPL](https://img.shields.io/badge/License-GPL-yellow.svg)](https://www.gnu.org/licenses/gpl-3.0.html)
+[![License: GPLv3](https://img.shields.io/badge/License-GPLv3-yellow.svg)](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
 <!-- omit from toc -->
 # uv-bump
