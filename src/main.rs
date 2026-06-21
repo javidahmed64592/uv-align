@@ -1,17 +1,34 @@
-fn get_greeting() -> &'static str {
-    "Hello, world!"
-}
+//! Update pyproject.toml dependency constraints using versions resolved by uv, with preview and interactive apply support.
+
+mod cli;
+
+use clap::Parser;
+use cli::{Cli, Commands};
 
 fn main() {
-    println!("{}", get_greeting());
-}
+    let cli = Cli::parse();
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+    match cli.command {
+        Commands::Check => {
+            println!("Running: check");
+            // TODO: diff logic
+        }
 
-    #[test]
-    fn greeting_is_hello_world() {
-        assert_eq!(get_greeting(), "Hello, world!");
+        Commands::Apply { yes, interactive } => {
+            println!("Running: apply");
+            println!("yes={yes}, interactive={interactive}");
+
+            // TODO: apply logic
+        }
+
+        Commands::Update { yes, interactive } => {
+            println!("Running: update");
+            println!("yes={yes}, interactive={interactive}");
+
+            // TODO:
+            // 1. uv lock --upgrade
+            // 2. compute diff
+            // 3. apply changes
+        }
     }
 }
