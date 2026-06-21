@@ -2,6 +2,7 @@
 
 mod cli;
 mod diff;
+mod pyproject;
 
 use clap::Parser;
 use cli::{Cli, Commands};
