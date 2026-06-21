@@ -1,3 +1,5 @@
+//! Command-line interface for uv-bump
+
 use clap::{Parser, Subcommand};
 
 #[derive(Parser, Debug)]

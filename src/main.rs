@@ -1,10 +1,4 @@
 //! Update pyproject.toml dependency constraints using versions resolved by uv, with preview and interactive apply support.
-//!
-//! Usage:
-//!
-//! uv-bump check                           # Check for dependency updates and show a diff of the changes
-//! uv-bump apply [-y] [-i, --interactive]  # Apply dependency updates to pyproject.toml
-//! uv-bump update [-y] [-i, --interactive] # Update dependencies and apply changes to pyproject.toml
 
 mod cli;
 
