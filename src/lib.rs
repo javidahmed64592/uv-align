@@ -1,6 +1,9 @@
 pub struct Dependency {
-    /// The name of the dependency.
+    /// The name of the dependency as written by the user.
     pub name: String,
+
+    /// The normalised name of the dependency (per PEP 503).
+    pub normalised_name: String,
 
     /// The version constraint of the dependency i.e. >=, <=, ==, etc.
     pub constraint: String,
@@ -10,8 +13,12 @@ pub struct Dependency {
 }
 
 pub struct LockVersion {
-    /// The name of the dependency.
+    /// The name of the dependency as written by uv.
     pub name: String,
+
+    /// The normalised name of the dependency (per PEP 503).
+    pub normalised_name: String,
+
     /// The version of the dependency.
     pub version: String,
 }

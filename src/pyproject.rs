@@ -55,7 +55,7 @@ pub fn parse_pep508(spec: &str, group: Option<String>) -> Option<Dependency> {
     if raw_name.is_empty() {
         return None;
     }
-    let name = uv_bump::normalize_name(raw_name);
+    let normalised_name = uv_bump::normalize_name(raw_name);
 
     // Everything after the name (and optional extras) is the version specifier.
     let rest = spec[name_end..].trim();
@@ -74,9 +74,10 @@ pub fn parse_pep508(spec: &str, group: Option<String>) -> Option<Dependency> {
     let constraint = rest.to_string();
 
     Some(Dependency {
-        name,
-        constraint,
-        group,
+        name: raw_name.to_string(),
+        normalised_name: normalised_name,
+        constraint: constraint,
+        group: group,
     })
 }
 
