@@ -1,7 +1,12 @@
 use owo_colors::OwoColorize;
 use uv_bump::DependencyChange;
 
-pub fn print_diff(changes: &[DependencyChange]) {
+pub fn print_diff(changes: &[DependencyChange], path: String) {
+    if changes.is_empty() {
+        println!("{} Dependencies already up to date!", "✔".bright_green());
+        return;
+    }
+
     for change in changes {
         println!(
             "{} {:<16} {}",
@@ -18,9 +23,17 @@ pub fn print_diff(changes: &[DependencyChange]) {
         println!();
     }
 
+    let apply_command;
+
+    if path == "." {
+        apply_command = "uv-bump apply".to_string();
+    } else {
+        apply_command = format!("uv-bump apply {}", path);
+    }
+
     println!(
         "{} dependency changes. Run `{}` to apply them.",
         changes.len().to_string().bold(),
-        "uv-bump apply".bright_green()
+        apply_command.bright_green(),
     );
 }
