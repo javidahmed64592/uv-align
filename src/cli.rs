@@ -15,10 +15,18 @@ pub struct Cli {
 #[derive(Subcommand, Debug)]
 pub enum Commands {
     /// Check for dependency updates and show a diff
-    Check,
+    Check {
+        /// Path to folder containing pyproject.toml and uv.lock (default: current directory)
+        #[arg(default_value = ".")]
+        path: String,
+    },
 
     /// Apply dependency updates to pyproject.toml
     Apply {
+        /// Path to folder containing pyproject.toml and uv.lock (default: current directory)
+        #[arg(default_value = ".")]
+        path: String,
+
         /// Automatically apply all changes without prompting
         #[arg(short = 'y', long = "yes")]
         yes: bool,
@@ -30,6 +38,10 @@ pub enum Commands {
 
     /// Upgrade dependencies with uv and apply updates
     Update {
+        /// Path to folder containing pyproject.toml and uv.lock (default: current directory)
+        #[arg(default_value = ".")]
+        path: String,
+
         /// Automatically apply all changes without prompting
         #[arg(short = 'y', long = "yes")]
         yes: bool,
