@@ -1,6 +1,8 @@
 //! Command-line interface for uv-bump
 
-use clap::{Parser, Subcommand};
+use std::path::PathBuf;
+
+use clap::Parser;
 
 #[derive(Parser, Debug)]
 #[command(
@@ -8,46 +10,23 @@ use clap::{Parser, Subcommand};
     about = "Update dependency constraints using versions resolved by `uv`"
 )]
 pub struct Cli {
-    #[command(subcommand)]
-    pub command: Commands,
-}
+    /// Path to folder containing `pyproject.toml` and `uv.lock` files
+    #[arg(default_value = ".")]
+    pub path: PathBuf,
 
-#[derive(Subcommand, Debug)]
-pub enum Commands {
-    /// Check for dependency updates and show a diff
-    Check {
-        /// Path to folder containing pyproject.toml and uv.lock
-        #[arg(default_value = ".")]
-        path: String,
-    },
+    /// Show a diff of dependency updates without applying them
+    #[arg(long)]
+    pub check: bool,
 
-    /// Apply dependency updates to pyproject.toml
-    Apply {
-        /// Path to folder containing pyproject.toml and uv.lock
-        #[arg(default_value = ".")]
-        path: String,
+    /// Automatically apply all changes without prompting
+    #[arg(short = 'y', long)]
+    pub yes: bool,
 
-        /// Automatically apply all changes without prompting
-        #[arg(short = 'y', long = "yes")]
-        yes: bool,
+    /// Prompt interactively for each change
+    #[arg(short = 'i', long)]
+    pub interactive: bool,
 
-        /// Prompt interactively for each change
-        #[arg(short = 'i', long = "interactive")]
-        interactive: bool,
-    },
-
-    /// Upgrade dependencies with uv and apply updates
-    Update {
-        /// Path to folder containing pyproject.toml and uv.lock
-        #[arg(default_value = ".")]
-        path: String,
-
-        /// Automatically apply all changes without prompting
-        #[arg(short = 'y', long = "yes")]
-        yes: bool,
-
-        /// Prompt interactively for each change
-        #[arg(short = 'i', long = "interactive")]
-        interactive: bool,
-    },
+    /// Upgrade dependencies in `uv.lock` with `uv`
+    #[arg(short = 'u', long = "upgrade")]
+    pub upgrade: bool,
 }
