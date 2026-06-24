@@ -13,19 +13,27 @@ use pyproject::read_dependencies;
 use std::path::Path;
 use uv_bump::{compute_dependency_changes, map_dependencies};
 
+fn get_diffs(
+    pyproject_path: &Path,
+    lockfile_path: &Path,
+) -> anyhow::Result<Vec<uv_bump::DependencyChange>> {
+    let dependencies = read_dependencies(pyproject_path)?;
+    let lock_versions = read_lock_versions(lockfile_path)?;
+
+    let mapped_dependencies = map_dependencies(&dependencies, &lock_versions);
+    let changes = compute_dependency_changes(&mapped_dependencies);
+
+    Ok(changes)
+}
+
 fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
         Commands::Check { path } => {
             std::env::set_current_dir(&path)?;
-            let dependencies = read_dependencies(Path::new("pyproject.toml"))?;
-            let lock_versions = read_lock_versions(Path::new("uv.lock"))?;
-
-            let mapped_dependencies = map_dependencies(&dependencies, &lock_versions);
-            let changes = compute_dependency_changes(&mapped_dependencies);
-
-            print_diff(&changes, path);
+            let diff = get_diffs(Path::new("pyproject.toml"), Path::new("uv.lock"))?;
+            print_diff(&diff, path);
         }
 
         Commands::Apply {
