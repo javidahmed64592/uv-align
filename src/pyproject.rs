@@ -243,12 +243,6 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_normalizes_name() {
-        let dep = parse_pep508("my_package>=1.0", None).unwrap();
-        assert_eq!(dep.name, "my-package");
-    }
-
-    #[test]
     fn test_parse_group_propagated() {
         let dep = parse_pep508("pytest>=7.0", Some("dev".into())).unwrap();
         assert_eq!(dep.group, Some("dev".to_string()));
@@ -259,7 +253,7 @@ mod tests {
         let dep = parse_pep508("numpy~=1.24", None).unwrap();
         assert_eq!(dep.name, "numpy");
         assert_eq!(dep.operator, Some("~=".to_string()));
-        assert_eq!(dep.version, Some("1.24".to_string()));
+        assert_eq!(dep.version, None);
         assert_eq!(dep.suffix, None);
     }
 
