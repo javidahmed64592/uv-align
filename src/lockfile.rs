@@ -23,9 +23,9 @@ pub fn read_lock_versions(path: &Path) -> Result<Vec<LockDependency>> {
             let normalised_name = uv_bump::normalize_name(&name);
             let version = pkg.get("version")?.as_str()?.to_string();
             Some(LockDependency {
-                name: name,
-                normalised_name: normalised_name,
-                version: version,
+                name,
+                normalised_name,
+                version,
             })
         })
         .collect();

@@ -92,25 +92,25 @@ pub fn compute_dependency_changes(mapped_deps: &[MappedDependency]) -> Vec<Depen
     let mut changes = Vec::new();
 
     for mapped in mapped_deps {
-        if let Some(pyproject_version) = &mapped.pyproject.version {
-            if pyproject_version != &mapped.lock.version {
-                let change = DependencyChange {
-                    name: mapped.pyproject.name.clone(),
-                    old: format!(
-                        "{}{}{}",
-                        mapped.pyproject.operator.clone().unwrap_or_default(),
-                        pyproject_version,
-                        mapped.pyproject.suffix.clone().unwrap_or_default()
-                    ),
-                    new: format!(
-                        "{}{}{}",
-                        mapped.pyproject.operator.clone().unwrap_or_default(),
-                        mapped.lock.version,
-                        mapped.pyproject.suffix.clone().unwrap_or_default()
-                    ),
-                };
-                changes.push(change);
-            }
+        if let Some(pyproject_version) = &mapped.pyproject.version
+            && pyproject_version != &mapped.lock.version
+        {
+            let change = DependencyChange {
+                name: mapped.pyproject.name.clone(),
+                old: format!(
+                    "{}{}{}",
+                    mapped.pyproject.operator.clone().unwrap_or_default(),
+                    pyproject_version,
+                    mapped.pyproject.suffix.clone().unwrap_or_default()
+                ),
+                new: format!(
+                    "{}{}{}",
+                    mapped.pyproject.operator.clone().unwrap_or_default(),
+                    mapped.lock.version,
+                    mapped.pyproject.suffix.clone().unwrap_or_default()
+                ),
+            };
+            changes.push(change);
         }
     }
 

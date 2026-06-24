@@ -23,13 +23,11 @@ pub fn print_diff(changes: &[DependencyChange], path: String) {
         println!();
     }
 
-    let apply_command;
-
-    if path == "." {
-        apply_command = "uv-bump apply".to_string();
+    let apply_command = if path == "." {
+        "uv-bump apply".to_string()
     } else {
-        apply_command = format!("uv-bump apply {}", path);
-    }
+        format!("uv-bump apply {}", path)
+    };
 
     println!(
         "{} dependency changes. Run `{}` to apply them.",

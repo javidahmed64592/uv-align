@@ -102,11 +102,11 @@ pub fn parse_pep508(spec: &str, group: Option<String>) -> Option<PyprojectDepend
 
     Some(PyprojectDependency {
         name: raw_name.to_string(),
-        normalised_name: normalised_name,
-        operator: operator,
-        version: version,
-        suffix: suffix,
-        group: group,
+        normalised_name,
+        operator,
+        version,
+        suffix,
+        group,
     })
 }
 
@@ -129,10 +129,10 @@ pub fn read_dependencies(path: &Path) -> Result<Vec<PyprojectDependency>> {
     if let Some(project) = doc.get("project") {
         if let Some(Value::Array(arr)) = project.get("dependencies") {
             for item in arr {
-                if let Value::String(s) = item {
-                    if let Some(dep) = parse_pep508(s, None) {
-                        deps.push(dep);
-                    }
+                if let Value::String(s) = item
+                    && let Some(dep) = parse_pep508(s, None)
+                {
+                    deps.push(dep);
                 }
             }
         }
@@ -142,10 +142,10 @@ pub fn read_dependencies(path: &Path) -> Result<Vec<PyprojectDependency>> {
             for (group_name, group_value) in opt_deps {
                 if let Value::Array(arr) = group_value {
                     for item in arr {
-                        if let Value::String(s) = item {
-                            if let Some(dep) = parse_pep508(s, Some(group_name.clone())) {
-                                deps.push(dep);
-                            }
+                        if let Value::String(s) = item
+                            && let Some(dep) = parse_pep508(s, Some(group_name.clone()))
+                        {
+                            deps.push(dep);
                         }
                     }
                 }
