@@ -36,9 +36,11 @@ pub struct MappedDependency {
 pub struct DependencyChange {
     /// The name of the dependency.
     pub name: String,
-    /// The old version number and constraint of the dependency.
+    /// The operator of the dependency, if any (">=", "==", "~=", etc.).
+    pub operator: Option<String>,
+    /// The old version number of the dependency.
     pub old: String,
-    /// The new version number and constraint of the dependency.
+    /// The new version number of the dependency.
     pub new: String,
 }
 
@@ -97,15 +99,14 @@ pub fn compute_dependency_changes(mapped_deps: &[MappedDependency]) -> Vec<Depen
         {
             let change = DependencyChange {
                 name: mapped.pyproject.name.clone(),
+                operator: mapped.pyproject.operator.clone(),
                 old: format!(
-                    "{}{}{}",
-                    mapped.pyproject.operator.clone().unwrap_or_default(),
+                    "{}{}",
                     pyproject_version,
                     mapped.pyproject.suffix.clone().unwrap_or_default()
                 ),
                 new: format!(
-                    "{}{}{}",
-                    mapped.pyproject.operator.clone().unwrap_or_default(),
+                    "{}{}",
                     mapped.lock.version,
                     mapped.pyproject.suffix.clone().unwrap_or_default()
                 ),
