@@ -2,10 +2,7 @@ use owo_colors::OwoColorize;
 use uv_bump::DependencyChange;
 
 pub fn print_diff(changes: &[DependencyChange]) {
-    if changes.is_empty() {
-        println!("{} Dependencies already up to date!", "✔".bright_green());
-        return;
-    }
+    println!("{}", "Changes:\n".bold().underline());
 
     for change in changes {
         println!(

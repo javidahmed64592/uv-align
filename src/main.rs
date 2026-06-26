@@ -12,7 +12,7 @@ use lockfile::read_lock_versions;
 use owo_colors::OwoColorize;
 use pyproject::read_dependencies;
 use std::path::Path;
-use uv_bump::{compute_dependency_changes, map_dependencies};
+use uv_bump::{compute_dependency_changes, get_error_msg, get_success_msg, map_dependencies};
 
 const PYPROJECT_FILENAME: &str = "pyproject.toml";
 const LOCKFILE_FILENAME: &str = "uv.lock";
@@ -28,10 +28,12 @@ fn main() -> anyhow::Result<()> {
     // Ensure check and yes flags are not both specified
     if check_flag && yes_flag {
         eprintln!(
-            "{} The {} and {} flags cannot be used together.",
-            "✖".bright_red(),
-            "--check".bright_green(),
-            "--yes".bright_green()
+            "{}",
+            get_error_msg(&format!(
+                "The '{}' and '{}' flags cannot be used together.",
+                "--check".bright_green(),
+                "--yes".bright_green()
+            ))
         );
         std::process::exit(1);
     }
@@ -39,9 +41,11 @@ fn main() -> anyhow::Result<()> {
     // Check if the path exists and is a directory
     if !root_path.exists() || !root_path.is_dir() {
         eprintln!(
-            "{} The specified path does not exist or is not a directory: {}",
-            "✖".bright_red(),
-            root_path.display().blue()
+            "{}",
+            get_error_msg(&format!(
+                "The specified path does not exist or is not a directory: {}",
+                root_path.display().blue()
+            ))
         );
         std::process::exit(1);
     }
@@ -53,20 +57,24 @@ fn main() -> anyhow::Result<()> {
 
     if !pyproject_path.exists() {
         eprintln!(
-            "{} '{}' does not exist in the specified path: {}",
-            "✖".bright_red(),
-            PYPROJECT_FILENAME.blue(),
-            root_path.display().blue()
+            "{}",
+            get_error_msg(&format!(
+                "'{}' does not exist in the specified path: {}",
+                PYPROJECT_FILENAME.blue(),
+                root_path.display().blue()
+            ))
         );
         std::process::exit(1);
     }
 
     if !lockfile_path.exists() {
         eprintln!(
-            "{} '{}' does not exist in the specified path: {}",
-            "✖".bright_red(),
-            LOCKFILE_FILENAME.blue(),
-            root_path.display().blue()
+            "{}",
+            get_error_msg(&format!(
+                "'{}' does not exist in the specified path: {}",
+                LOCKFILE_FILENAME.blue(),
+                root_path.display().blue()
+            ))
         );
         std::process::exit(1);
     }
@@ -74,8 +82,9 @@ fn main() -> anyhow::Result<()> {
     // TODO: Upgrade dependencies with uv if the upgrade flag is set
     if upgrade_flag {
         println!(
-            "Updating dependencies in '{}' using 'uv'...",
-            LOCKFILE_FILENAME.blue()
+            "Updating dependencies in '{}' using '{}'...",
+            LOCKFILE_FILENAME.blue(),
+            "uv".bright_green()
         );
         todo!("Implement uv upgrade functionality");
     }
@@ -87,15 +96,25 @@ fn main() -> anyhow::Result<()> {
     let mapped_dependencies = map_dependencies(&dependencies, &lock_versions);
     let diff = compute_dependency_changes(&mapped_dependencies);
 
-    print_diff(&diff);
+    // If there are no changes, exit early
+    if diff.is_empty() {
+        println!("{}", get_success_msg("Dependencies are already in sync!"));
+        return Ok(());
+    } else {
+        print_diff(&diff);
+    }
 
     // If the check flag is set, exit after printing the diff
     if check_flag {
-        return Ok(());
-    }
-
-    // If there are no changes, exit early
-    if diff.is_empty() {
+        println!(
+            "{}",
+            get_success_msg(&format!(
+                "Run '{} {}' without the '{}' flag to apply changes.",
+                "uv-bump".bright_green(),
+                root_path.display().to_string().bright_green(),
+                "--check".bright_green()
+            ))
+        );
         return Ok(());
     }
 

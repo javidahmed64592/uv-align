@@ -1,9 +1,11 @@
 use anyhow::{Context, Result};
+use owo_colors::OwoColorize;
 use std::path::Path;
 use toml::Value;
 
-use uv_bump::PyprojectDependency;
+use uv_bump::{PyprojectDependency, get_error_msg};
 
+/// Parse a single version constraint string into its components: operator, version, and optional suffix.
 fn parse_constraint(s: &str) -> (Option<String>, Option<String>, Option<String>) {
     if s.is_empty() || s.starts_with('@') {
         return (None, None, None);
@@ -117,11 +119,16 @@ pub fn parse_pep508(spec: &str, group: Option<String>) -> Option<PyprojectDepend
 ///   [project.optional-dependencies]     → group = Some("<extra-name>")
 ///   [dependency-groups]                 → group = Some("<group-name>")   (PEP 735 / uv)
 pub fn read_dependencies(path: &Path) -> Result<Vec<PyprojectDependency>> {
-    let raw = std::fs::read_to_string(path)
-        .with_context(|| format!("Failed to read {}", path.display()))?;
+    let raw = std::fs::read_to_string(path).with_context(|| {
+        get_error_msg(&format!("Failed to read: {}", path.display().bright_blue()))
+    })?;
 
-    let doc: Value = toml::from_str(&raw)
-        .with_context(|| format!("Failed to parse TOML in {}", path.display()))?;
+    let doc: Value = toml::from_str(&raw).with_context(|| {
+        get_error_msg(&format!(
+            "Failed to parse TOML in: {}",
+            path.display().bright_blue()
+        ))
+    })?;
 
     let mut deps: Vec<PyprojectDependency> = Vec::new();
 

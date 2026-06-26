@@ -1,3 +1,15 @@
+use owo_colors::OwoColorize;
+
+// General methods
+pub fn get_success_msg(msg: &str) -> String {
+    format!("{} {}", "✔".bright_green(), msg)
+}
+
+pub fn get_error_msg(msg: &str) -> String {
+    format!("{} {}", "✖".bright_red(), msg)
+}
+
+// Dependencies
 #[derive(Debug, Clone)]
 pub struct PyprojectDependency {
     /// The name of the dependency as written by the user.
