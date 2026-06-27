@@ -5,6 +5,7 @@ mod diff;
 mod lockfile;
 mod pyproject;
 
+use anyhow::Context;
 use clap::Parser;
 use cli::Cli;
 use crossterm::event::{self, Event, KeyCode, KeyEventKind};
@@ -20,6 +21,7 @@ use uv_bump::{
 
 const PYPROJECT_FILENAME: &str = "pyproject.toml";
 const LOCKFILE_FILENAME: &str = "uv.lock";
+const UPDATE_COMMAND: &str = "uv lock --upgrade";
 
 fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
@@ -83,14 +85,64 @@ fn main() -> anyhow::Result<()> {
         std::process::exit(1);
     }
 
-    // TODO: Upgrade dependencies with uv if the upgrade flag is set
     if upgrade_flag {
         println!(
             "Updating dependencies in '{}' using '{}'...",
             LOCKFILE_FILENAME.bright_blue(),
             "uv".bright_green()
         );
-        todo!("Implement uv upgrade functionality");
+
+        // Check that uv is installed and available in the PATH
+        if let Err(e) = std::process::Command::new("uv").arg("--version").output() {
+            eprintln!(
+                "{}",
+                get_error_msg(&format!(
+                    "Failed to execute '{}'. Ensure it is installed and available in the PATH. Error: {}",
+                    "uv".bright_green(),
+                    e.to_string().bright_red()
+                ))
+            );
+            std::process::exit(1);
+        }
+
+        // Run `uv lock --upgrade` to update the lockfile
+        let split_command = UPDATE_COMMAND.split_whitespace().collect::<Vec<&str>>();
+        let status = std::process::Command::new(split_command[0])
+            .args(&split_command[1..])
+            .status()
+            .with_context(|| get_error_msg(&format!("Failed to execute: '{}'", UPDATE_COMMAND.bright_green())))
+            .unwrap_or_else(|e| {
+                eprintln!(
+                    "{}",
+                    get_error_msg(&format!(
+                        "Failed to execute '{}'. Ensure it is installed and available in the PATH. Error: {}",
+                        UPDATE_COMMAND.bright_green(),
+                        e.to_string().bright_red()
+                    ))
+                );
+                std::process::exit(1);
+            });
+
+        if !status.success() {
+            eprintln!(
+                "{}",
+                get_error_msg(&format!(
+                    "'{}' command failed with exit code: {}",
+                    UPDATE_COMMAND.bright_green(),
+                    status.code().unwrap_or(-1).to_string().bright_red()
+                ))
+            );
+            std::process::exit(1);
+        } else {
+            println!(
+                "{}",
+                get_success_msg(&format!(
+                    "Dependencies in '{}' updated successfully using '{}'!",
+                    LOCKFILE_FILENAME.bright_blue(),
+                    UPDATE_COMMAND.bright_green()
+                ))
+            );
+        }
     }
 
     // Compute and print the diff of dependency changes
