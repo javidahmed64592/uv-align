@@ -84,9 +84,12 @@ wheels = [
 name = "uv-bump"
 version = "0.1.0"
 source = { editable = "." }
-dependencies = [
+
+[package.optional-dependencies]
+dev = [
     { name = "maturin" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "maturin", specifier = ">=1.14.1" }]
+requires-dist = [{ name = "maturin", marker = "extra == 'dev'", specifier = ">=1.14.1" }]
+provides-extras = ["dev"]
