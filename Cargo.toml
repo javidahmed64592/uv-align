@@ -1,6 +1,7 @@
 [package]
 name = "uv-bump"
 version = "0.1.0"
+description = "Update pyproject.toml dependency constraints using versions resolved by uv."
 edition = "2024"
 repository = "https://github.com/javidahmed64592/uv-bump"
 license = "GPL-3.0-or-later"
