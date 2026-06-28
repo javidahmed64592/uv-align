@@ -34,7 +34,7 @@ uv-align -yu     # Upgrade dependencies and update version constraints in `pypro
 
 Example output:
 
-![Example Usage](docs/usage.png)
+![Example Usage](https://github.com/javidahmed64592/uv-align/blob/main/docs/usage.png)
 
 ## Usage
 
