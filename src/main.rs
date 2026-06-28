@@ -15,7 +15,7 @@ use lockfile::read_lock_versions;
 use owo_colors::OwoColorize;
 use pyproject::{apply_changes, read_dependencies};
 use std::path::Path;
-use uv_bump::{
+use uv_align::{
     compute_dependency_changes, get_error_msg, get_success_msg, get_warning_msg, map_dependencies,
 };
 
@@ -168,7 +168,7 @@ fn main() -> anyhow::Result<()> {
             "{}",
             get_success_msg(&format!(
                 "Run '{} {}' without the '{}' flag to apply changes.",
-                "uv-bump".bright_green(),
+                "uv-align".bright_green(),
                 root_path.display().to_string().bright_green(),
                 "--check".bright_green()
             ))

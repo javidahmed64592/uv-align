@@ -3,7 +3,7 @@ requires = ["maturin>=1.9.3,<2.0"]
 build-backend = "maturin"
 
 [project]
-name = "uv-bump"
+name = "uv-align"
 version = "0.1.0"
 description = "Update pyproject.toml dependency constraints using versions resolved by uv."
 readme = "README.md"
@@ -24,7 +24,7 @@ dev = [
 ]
 
 [project.urls]
-repository = "https://github.com/javidahmed64592/uv-bump"
+repository = "https://github.com/javidahmed64592/uv-align"
 
 [tool.maturin]
 bindings = "bin"
