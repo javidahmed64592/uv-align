@@ -1,5 +1,5 @@
 use owo_colors::OwoColorize;
-use uv_bump::DependencyChange;
+use uv_align::DependencyChange;
 
 pub fn print_diff(changes: &[DependencyChange]) {
     for change in changes {

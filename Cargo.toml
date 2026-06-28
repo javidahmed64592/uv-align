@@ -1,11 +1,11 @@
 [package]
-name = "uv-bump"
+name = "uv-align"
 version = "0.1.0"
 description = "Update pyproject.toml dependency constraints using versions resolved by uv."
 edition = "2024"
-repository = "https://github.com/javidahmed64592/uv-bump"
-homepage = "https://github.com/javidahmed64592/uv-bump"
-license = "GPL-3.0-or-later"
+repository = "https://github.com/javidahmed64592/uv-align"
+homepage = "https://github.com/javidahmed64592/uv-align"
+license = "MIT"
 authors = ["Javid Ahmed <javidahmed@icloud.com>"]
 
 [package.metadata.wix]
@@ -15,7 +15,7 @@ license = false
 eula = false
 
 [[bin]]
-name = "uv-bump"
+name = "uv-align"
 
 [dependencies]
 anyhow = "1.0.102"

@@ -1,4 +1,4 @@
-//! Command-line interface for uv-bump
+//! Command-line interface for uv-align
 
 use std::path::PathBuf;
 
@@ -6,7 +6,7 @@ use clap::Parser;
 
 #[derive(Parser, Debug)]
 #[command(
-    name = "uv-bump",
+    name = "uv-align",
     about = "Update dependency constraints using versions resolved by `uv`"
 )]
 pub struct Cli {
