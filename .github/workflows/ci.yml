@@ -43,4 +43,4 @@ jobs:
       - uses: javidahmed64592/actions-template-python/actions/setup/install-python-dev@main
 
       - name: Run develop
-        run: maturin develop --release
+        run: uv run maturin develop --release
