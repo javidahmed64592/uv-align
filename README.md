@@ -38,8 +38,8 @@ Example output:
 
 ## Usage
 
-```sh
-Update dependency constraints using versions resolved by `uv`
+```
+Align `pyproject.toml` dependency constraints with versions resolved by `uv`
 
 Usage: uv-align [OPTIONS] [PATH]
 
@@ -49,7 +49,7 @@ Arguments:
 Options:
       --check    Show a diff of dependency updates without applying them
   -y, --yes      Automatically apply all changes without prompting
-  -u, --upgrade  Upgrade dependencies in `uv.lock` with `uv`
+  -u, --upgrade  Upgrade dependencies in `uv.lock` with `uv lock --upgrade`
   -v, --verbose  Show detailed information about dependency updates
   -h, --help     Print help
 ```

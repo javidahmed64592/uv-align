@@ -5,7 +5,7 @@ build-backend = "maturin"
 [project]
 name = "uv-align"
 version = "0.1.1"
-description = "Update pyproject.toml dependency constraints using versions resolved by uv."
+description = "Align `pyproject.toml` dependency constraints with versions resolved by `uv`."
 readme = "README.md"
 requires-python = ">=3.8"
 license = { file = "LICENSE" }
@@ -25,6 +25,7 @@ dev = [
 
 [project.urls]
 repository = "https://github.com/javidahmed64592/uv-align"
+homepage = "https://pypi.org/project/uv-align"
 
 [tool.maturin]
 bindings = "bin"

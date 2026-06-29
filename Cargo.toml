@@ -1,10 +1,10 @@
 [package]
 name = "uv-align"
 version = "0.1.1"
-description = "Update pyproject.toml dependency constraints using versions resolved by uv."
+description = "Align `pyproject.toml` dependency constraints with versions resolved by `uv`."
 edition = "2024"
 repository = "https://github.com/javidahmed64592/uv-align"
-homepage = "https://github.com/javidahmed64592/uv-align"
+homepage = "https://pypi.org/project/uv-align"
 license = "MIT"
 authors = ["Javid Ahmed <javidahmed@icloud.com>"]
 
