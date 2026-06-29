@@ -17,6 +17,7 @@ use std::path::Path;
 use uv_align::{
     check_uv_command, compute_dependency_changes, get_error_msg, get_success_msg, get_warning_msg,
     map_dependencies, parse_uv_update_output, print_uv_modified_dependencies, run_uv_lock_upgrade,
+    validate_file_exists, validate_root_directory_exists,
 };
 
 const PYPROJECT_FILENAME: &str = "pyproject.toml";
@@ -45,46 +46,14 @@ fn main() -> anyhow::Result<()> {
         std::process::exit(2);
     }
 
-    // Check if the path exists and is a directory
-    if !root_path.exists() || !root_path.is_dir() {
-        eprintln!(
-            "{}",
-            get_error_msg(&format!(
-                "The specified path does not exist or is not a directory: {}",
-                root_path.display().bright_blue()
-            ))
-        );
-        std::process::exit(2);
-    }
+    validate_root_directory_exists(&root_path)?;
     std::env::set_current_dir(&root_path)?;
 
-    // Check if pyproject.toml and uv.lock exist in the specified path
     let pyproject_path = Path::new(PYPROJECT_FILENAME);
     let lockfile_path = Path::new(LOCKFILE_FILENAME);
 
-    if !pyproject_path.exists() {
-        eprintln!(
-            "{}",
-            get_error_msg(&format!(
-                "'{}' does not exist in the specified path: {}",
-                PYPROJECT_FILENAME.bright_blue(),
-                root_path.display().bright_blue()
-            ))
-        );
-        std::process::exit(2);
-    }
-
-    if !lockfile_path.exists() {
-        eprintln!(
-            "{}",
-            get_error_msg(&format!(
-                "'{}' does not exist in the specified path: {}",
-                LOCKFILE_FILENAME.bright_blue(),
-                root_path.display().bright_blue()
-            ))
-        );
-        std::process::exit(2);
-    }
+    validate_file_exists(pyproject_path)?;
+    validate_file_exists(lockfile_path)?;
 
     if upgrade_flag {
         println!(

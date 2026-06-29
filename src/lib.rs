@@ -1,4 +1,4 @@
-use std::process::Output;
+use std::{path, process::Output};
 
 use anyhow::Context;
 use owo_colors::OwoColorize;
@@ -14,6 +14,41 @@ pub fn get_warning_msg(msg: &str) -> String {
 
 pub fn get_error_msg(msg: &str) -> String {
     format!("{} {}", "✖".bright_red(), msg)
+}
+
+/// Validate that the specified root directory exists and is a directory.
+pub fn validate_root_directory_exists(root_path: &path::Path) -> Result<(), std::io::Error> {
+    if root_path.exists() && root_path.is_dir() {
+        Ok(())
+    } else {
+        eprintln!(
+            "{}",
+            get_error_msg(&format!(
+                "The specified path does not exist or is not a directory: {}",
+                root_path.display().bright_blue()
+            ))
+        );
+        std::process::exit(2);
+    }
+}
+
+/// Validate that the specified file exists.
+pub fn validate_file_exists(filepath: &path::Path) -> Result<(), std::io::Error> {
+    let cwd = std::env::current_dir().unwrap_or_else(|_| path::PathBuf::from("."));
+
+    if filepath.exists() {
+        Ok(())
+    } else {
+        eprintln!(
+            "{}",
+            get_error_msg(&format!(
+                "'{}' does not exist at: {}",
+                filepath.display().bright_blue(),
+                cwd.join(filepath).display().bright_blue()
+            ))
+        );
+        std::process::exit(2);
+    }
 }
 
 // Dependencies
