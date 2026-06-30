@@ -31,14 +31,24 @@ fn main() -> anyhow::Result<()> {
     }
 
     // Validate the root directory and required files
-    validate_root_directory_exists(&cli.path)?;
+    if let Err(error) = validate_root_directory_exists(&cli.path) {
+        eprintln!("{}", error);
+        std::process::exit(2);
+    }
     std::env::set_current_dir(&cli.path)?;
 
     let pyproject_path = Path::new(PYPROJECT_FILENAME);
     let lockfile_path = Path::new(LOCKFILE_FILENAME);
 
-    validate_file_exists(pyproject_path)?;
-    validate_file_exists(lockfile_path)?;
+    if let Err(error) = validate_file_exists(pyproject_path) {
+        eprintln!("{}", error);
+        std::process::exit(2);
+    }
+
+    if let Err(error) = validate_file_exists(lockfile_path) {
+        eprintln!("{}", error);
+        std::process::exit(2);
+    }
 
     // Upgrade dependencies in `uv.lock` if the upgrade flag is set
     if cli.upgrade {

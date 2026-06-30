@@ -63,8 +63,8 @@ pub fn validate_conflicting_flags(
     if flag_1 && flag_2 {
         return Err(anyhow::anyhow!(get_error_msg(&format!(
             "The '{}' and '{}' flags cannot be used together.",
-            flag_1_name.bright_green(),
-            flag_2_name.bright_green()
+            flag_1_name.bright_red(),
+            flag_2_name.bright_red()
         ))));
     }
     Ok(())

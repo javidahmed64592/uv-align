@@ -75,37 +75,29 @@ pub fn get_error_msg(msg: &str) -> String {
 }
 
 /// Validate that the specified root directory exists and is a directory.
-pub fn validate_root_directory_exists(root_path: &path::Path) -> Result<(), std::io::Error> {
+pub fn validate_root_directory_exists(root_path: &path::Path) -> Result<(), anyhow::Error> {
     if root_path.exists() && root_path.is_dir() {
         Ok(())
     } else {
-        eprintln!(
-            "{}",
-            get_error_msg(&format!(
-                "The specified path does not exist or is not a directory: {}",
-                root_path.display().bright_blue()
-            ))
-        );
-        std::process::exit(2);
+        return Err(anyhow::anyhow!(get_error_msg(&format!(
+            "The specified path does not exist or is not a directory: {}",
+            root_path.display().bright_red()
+        ))));
     }
 }
 
 /// Validate that the specified file exists.
-pub fn validate_file_exists(filepath: &path::Path) -> Result<(), std::io::Error> {
+pub fn validate_file_exists(filepath: &path::Path) -> Result<(), anyhow::Error> {
     let cwd = std::env::current_dir().unwrap_or_else(|_| path::PathBuf::from("."));
 
     if filepath.exists() {
         Ok(())
     } else {
-        eprintln!(
-            "{}",
-            get_error_msg(&format!(
-                "'{}' does not exist at: {}",
-                filepath.display().bright_blue(),
-                cwd.join(filepath).display().bright_blue()
-            ))
-        );
-        std::process::exit(2);
+        return Err(anyhow::anyhow!(get_error_msg(&format!(
+            "The required file '{}' does not exist at: {}",
+            filepath.display().bright_red(),
+            cwd.join(filepath).display().bright_red()
+        ))));
     }
 }
 
