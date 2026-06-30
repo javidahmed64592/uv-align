@@ -41,6 +41,12 @@ If you use `uv`, you can install `uv-align` as a global tool:
 uv tool install uv-align
 ```
 
+If you'd like to run it without installing:
+
+```sh
+uvx uv-align
+```
+
 **As a dev dependency**
 
 To pin `uv-align` to a specific project, add it to your development dependencies in `pyproject.toml`:
