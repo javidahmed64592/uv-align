@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = "uv-align"
-version = "0.1.1"
+dynamic = ["version"]
 description = "Align `pyproject.toml` dependency constraints with versions resolved by `uv`."
 readme = "README.md"
 requires-python = ">=3.8"

@@ -82,7 +82,6 @@ wheels = [
 
 [[package]]
 name = "uv-align"
-version = "0.1.1"
 source = { editable = "." }
 
 [package.optional-dependencies]
