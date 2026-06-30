@@ -1,22 +1,20 @@
 //! Align `pyproject.toml` dependency constraints with versions resolved by `uv`
 
 mod cli;
-mod diff;
 mod lockfile;
 mod pyproject;
 
 use cli::{parse_cli_args, validate_conflicting_flags};
 use crossterm::event::{self, Event, KeyCode, KeyEventKind};
 use crossterm::terminal;
-use diff::print_diff;
 use lockfile::read_lock_versions;
 use owo_colors::OwoColorize;
 use pyproject::{apply_changes, read_dependencies};
 use std::path::Path;
 use uv_align::{
     check_uv_command, compute_dependency_changes, get_success_msg, get_warning_msg,
-    map_dependencies, parse_uv_update_output, print_uv_modified_dependencies, run_uv_lock_upgrade,
-    validate_file_exists, validate_root_directory_exists,
+    map_dependencies, parse_uv_update_output, print_diff, print_uv_modified_dependencies,
+    run_uv_lock_upgrade, validate_file_exists, validate_root_directory_exists,
 };
 
 const PYPROJECT_FILENAME: &str = "pyproject.toml";

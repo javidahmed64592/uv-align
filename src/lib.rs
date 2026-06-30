@@ -3,6 +3,60 @@ use std::{path, process::Output};
 use anyhow::Context;
 use owo_colors::OwoColorize;
 
+// Structs representing dependencies
+
+/// A struct representing a dependency as read from `pyproject.toml`.
+#[derive(Debug, Clone)]
+pub struct PyprojectDependency {
+    /// The name of the dependency as written by the user.
+    pub name: String,
+    /// The normalised name of the dependency (per PEP 503).
+    pub normalised_name: String,
+    /// The version of the dependency, if any.
+    pub version: Option<String>,
+    /// The operator of the dependency, if any (">=", "==", "~=", etc.).
+    pub operator: Option<String>,
+    /// The suffix of the dependency, if any (",<1.0" or ",!=1.0.0").
+    pub suffix: Option<String>,
+    /// The group of the dependency, if any.
+    pub group: Option<String>,
+}
+
+/// A struct representing a dependency as read from `uv.lock`.
+#[derive(Debug, Clone)]
+pub struct LockDependency {
+    /// The name of the dependency as written by uv.
+    pub name: String,
+    /// The normalised name of the dependency (per PEP 503).
+    pub normalised_name: String,
+    /// The version of the dependency.
+    pub version: String,
+}
+
+/// A struct representing a dependency that has been mapped from `pyproject.toml` to `uv.lock`.
+#[derive(Debug, Clone)]
+pub struct MappedDependency {
+    /// The dependency as read from pyproject.toml.
+    pub pyproject: PyprojectDependency,
+    /// The dependency as read from uv.lock.
+    pub lock: LockDependency,
+}
+
+/// A struct representing a change in a dependency's version.
+#[derive(Debug, Clone)]
+pub struct DependencyChange {
+    /// The name of the dependency.
+    pub name: String,
+    /// The operator of the dependency, if any (">=", "==", "~=", etc.).
+    pub operator: Option<String>,
+    /// The old version number of the dependency.
+    pub old: String,
+    /// The new version number of the dependency.
+    pub new: String,
+    /// The suffix of the dependency, if any (",<1.0" or ",!=1.0.0").
+    pub suffix: Option<String>,
+}
+
 // General methods
 
 /// Get a success message with a green checkmark.
@@ -185,60 +239,6 @@ pub fn print_uv_modified_dependencies(
     }
 }
 
-// Dependencies
-
-/// A struct representing a dependency as read from `pyproject.toml`.
-#[derive(Debug, Clone)]
-pub struct PyprojectDependency {
-    /// The name of the dependency as written by the user.
-    pub name: String,
-    /// The normalised name of the dependency (per PEP 503).
-    pub normalised_name: String,
-    /// The version of the dependency, if any.
-    pub version: Option<String>,
-    /// The operator of the dependency, if any (">=", "==", "~=", etc.).
-    pub operator: Option<String>,
-    /// The suffix of the dependency, if any (",<1.0" or ",!=1.0.0").
-    pub suffix: Option<String>,
-    /// The group of the dependency, if any.
-    pub group: Option<String>,
-}
-
-/// A struct representing a dependency as read from `uv.lock`.
-#[derive(Debug, Clone)]
-pub struct LockDependency {
-    /// The name of the dependency as written by uv.
-    pub name: String,
-    /// The normalised name of the dependency (per PEP 503).
-    pub normalised_name: String,
-    /// The version of the dependency.
-    pub version: String,
-}
-
-/// A struct representing a dependency that has been mapped from `pyproject.toml` to `uv.lock`.
-#[derive(Debug, Clone)]
-pub struct MappedDependency {
-    /// The dependency as read from pyproject.toml.
-    pub pyproject: PyprojectDependency,
-    /// The dependency as read from uv.lock.
-    pub lock: LockDependency,
-}
-
-/// A struct representing a change in a dependency's version.
-#[derive(Debug, Clone)]
-pub struct DependencyChange {
-    /// The name of the dependency.
-    pub name: String,
-    /// The operator of the dependency, if any (">=", "==", "~=", etc.).
-    pub operator: Option<String>,
-    /// The old version number of the dependency.
-    pub old: String,
-    /// The new version number of the dependency.
-    pub new: String,
-    /// The suffix of the dependency, if any (",<1.0" or ",!=1.0.0").
-    pub suffix: Option<String>,
-}
-
 // Dependency parsing
 
 /// Normalise a package name per PEP 503:
@@ -312,6 +312,29 @@ pub fn compute_dependency_changes(mapped_deps: &[MappedDependency]) -> Vec<Depen
     }
 
     changes
+}
+
+/// Print the differences between the old and new versions of dependencies.
+pub fn print_diff(changes: &[DependencyChange]) {
+    for change in changes {
+        println!(
+            "{} {:<16} {}{}{}",
+            "-".bright_red(),
+            change.name.bold(),
+            change.operator.clone().unwrap_or_default().bright_red(),
+            change.old.bright_red().underline(),
+            change.suffix.clone().unwrap_or_default().bright_red(),
+        );
+        println!(
+            "{} {:<16} {}{}{}",
+            "+".bright_green(),
+            change.name.bold(),
+            change.operator.clone().unwrap_or_default().bright_green(),
+            change.new.bright_green().underline(),
+            change.suffix.clone().unwrap_or_default().bright_green()
+        );
+        println!();
+    }
 }
 
 #[cfg(test)]
