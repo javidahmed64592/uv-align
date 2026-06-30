@@ -100,7 +100,7 @@ pub fn validate_file_exists(filepath: &path::Path) -> Result<(), anyhow::Error> 
     }
 }
 
-// Methods for handling `uv lock --upgrade`
+// uv methods
 
 /// Check `uv` command availability.
 pub fn check_uv_command() -> Result<(), anyhow::Error> {
@@ -312,6 +312,8 @@ pub fn print_diff(changes: &[DependencyChange]) {
 
 #[cfg(test)]
 mod tests {
+    use std::os::unix::process::ExitStatusExt;
+
     use super::*;
 
     // General methods
@@ -359,6 +361,31 @@ mod tests {
     fn test_validate_file_not_exists() {
         let path = std::path::Path::new("non_existent_file.txt");
         assert!(validate_file_exists(&path).is_err());
+    }
+
+    // uv methods
+
+    #[test]
+    fn test_parse_uv_update_output() {
+        let output = Output {
+            status: std::process::ExitStatus::from_raw(0),
+            stdout: Vec::new(),
+            stderr: b"Updated package1\nAdded package2\nRemoved package3\n".to_vec(),
+        };
+
+        let (updated, added, removed) = parse_uv_update_output(&output);
+        assert_eq!(updated, vec!["package1"]);
+        assert_eq!(added, vec!["package2"]);
+        assert_eq!(removed, vec!["package3"]);
+    }
+
+    #[test]
+    fn test_print_uv_modified_dependencies() {
+        let updated = vec!["package1".to_string()];
+        let added = vec!["package2".to_string()];
+        let removed = vec!["package3".to_string()];
+
+        print_uv_modified_dependencies(updated, added, removed, true);
     }
 
     // ── normalize_name ───────────────────────────────────────────────────────
