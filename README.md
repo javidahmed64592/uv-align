@@ -35,7 +35,7 @@ It does not require a virtual environment as it does not install packages, and n
 
 **As a tool (recommended)**
 
-If you use `uv`, you can install `uv-align` as a global tool:
+Install `uv-align` as a global tool:
 
 ```sh
 uv tool install uv-align
@@ -136,4 +136,4 @@ The number of updated, added, and removed packages reported by `uv` is printed a
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/javidahmed64592/uv-align/blob/main/LICENSE) file for details.

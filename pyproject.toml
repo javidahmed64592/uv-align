@@ -12,7 +12,7 @@ license = { file = "LICENSE" }
 authors = [
     { name = "Javid Ahmed", email = "javidahmed@icloud.com" }
 ]
-keywords = ["uv", "dependencies", "python", "packaging"]
+keywords = ["uv", "python", "dependencies", "pyproject", "cli"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Environment :: Console",
@@ -22,7 +22,6 @@ classifiers = [
     "Programming Language :: Rust",
     "Programming Language :: Python :: Implementation :: CPython",
     "Topic :: Software Development :: Build Tools",
-    "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Utilities",
 ]
 
