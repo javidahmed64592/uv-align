@@ -26,7 +26,11 @@ const UPDATE_COMMAND: &str = "uv lock --upgrade";
 fn main() -> anyhow::Result<()> {
     // Get CLI arguments
     let cli = parse_cli_args();
-    validate_conflicting_flags(cli.check, cli.yes, "--check", "-y / --yes")?;
+
+    if let Err(error) = validate_conflicting_flags(cli.check, cli.yes, "--check", "-y / --yes") {
+        eprintln!("{}", error);
+        std::process::exit(2);
+    }
 
     // Validate the root directory and required files
     validate_root_directory_exists(&cli.path)?;
