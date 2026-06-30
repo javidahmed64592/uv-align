@@ -314,6 +314,53 @@ pub fn print_diff(changes: &[DependencyChange]) {
 mod tests {
     use super::*;
 
+    // General methods
+
+    #[test]
+    fn test_get_success_msg() {
+        let msg = "Operation successful";
+        let result = get_success_msg(msg);
+        assert!(result.contains(msg));
+    }
+
+    #[test]
+    fn test_get_warning_msg() {
+        let msg = "This is a warning";
+        let result = get_warning_msg(msg);
+        assert!(result.contains(msg));
+    }
+
+    #[test]
+    fn test_get_error_msg() {
+        let msg = "An error occurred";
+        let result = get_error_msg(msg);
+        assert!(result.contains(msg));
+    }
+
+    #[test]
+    fn test_validate_root_directory_exists() {
+        let path = std::env::current_dir().unwrap();
+        assert!(validate_root_directory_exists(&path).is_ok());
+    }
+
+    #[test]
+    fn test_validate_root_directory_not_exists() {
+        let path = std::path::Path::new("non_existent_directory");
+        assert!(validate_root_directory_exists(&path).is_err());
+    }
+
+    #[test]
+    fn test_validate_file_exists() {
+        let path = std::env::current_exe().unwrap();
+        assert!(validate_file_exists(&path).is_ok());
+    }
+
+    #[test]
+    fn test_validate_file_not_exists() {
+        let path = std::path::Path::new("non_existent_file.txt");
+        assert!(validate_file_exists(&path).is_err());
+    }
+
     // ── normalize_name ───────────────────────────────────────────────────────
 
     #[test]
