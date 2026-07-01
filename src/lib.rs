@@ -212,11 +212,10 @@ pub fn print_uv_modified_dependencies(
     }
 }
 
-// Dependency parsing
+// Dependency parsing methods
 
-/// Normalise a package name per PEP 503:
-/// lowercase and collapse runs of [-_.] into a single '-'.
-pub fn normalize_name(name: &str) -> String {
+/// Normalise a package name per PEP 503.
+pub fn normalise_dependency_name(name: &str) -> String {
     let lower = name.to_lowercase();
     // Replace any run of [-_.] with a single '-'
     let mut result = String::with_capacity(lower.len());
@@ -235,12 +234,14 @@ pub fn normalize_name(name: &str) -> String {
     result
 }
 
-/// Normalise a version string by stripping trailing `.0` components
-fn normalize_version(version: &str) -> String {
+/// Normalise a version string by stripping trailing `.0` components.
+fn normalise_dependency_version(version: &str) -> String {
     let parts: Vec<&str> = version.split('.').collect();
     let trimmed = parts.iter().rev().skip_while(|&&p| p == "0").count();
     parts[..trimmed.max(1)].join(".")
 }
+
+// Compute changes methods
 
 /// Map dependencies from pyproject.toml to uv.lock based on their normalised names.
 pub fn map_dependencies(
@@ -272,7 +273,9 @@ pub fn compute_dependency_changes(mapped_deps: &[MappedDependency]) -> Vec<Depen
         if let Some(pyproject_version) = &mapped.pyproject.version {
             let lock_version = &mapped.lock.version;
 
-            if normalize_version(pyproject_version) != normalize_version(lock_version) {
+            if normalise_dependency_version(pyproject_version)
+                != normalise_dependency_version(lock_version)
+            {
                 changes.push(DependencyChange {
                     name: mapped.pyproject.name.clone(),
                     operator: mapped.pyproject.operator.clone(),
@@ -312,9 +315,8 @@ pub fn print_diff(changes: &[DependencyChange]) {
 
 #[cfg(test)]
 mod tests {
-    use std::os::unix::process::ExitStatusExt;
-
     use super::*;
+    use std::os::unix::process::ExitStatusExt;
 
     // General methods
 
@@ -388,26 +390,101 @@ mod tests {
         print_uv_modified_dependencies(updated, added, removed, true);
     }
 
-    // ── normalize_name ───────────────────────────────────────────────────────
+    // Dependency parsing methods
 
     #[test]
-    fn test_normalize_basic() {
-        assert_eq!(normalize_name("requests"), "requests");
+    fn test_normalise_dependency_name() {
+        assert_eq!(normalise_dependency_name("requests"), "requests");
+        assert_eq!(normalise_dependency_name("my_package"), "my-package");
+        assert_eq!(
+            normalise_dependency_name("My.Cool-Package"),
+            "my-cool-package"
+        );
+        assert_eq!(normalise_dependency_name("weird___name"), "weird-name");
     }
 
     #[test]
-    fn test_normalize_underscores() {
-        assert_eq!(normalize_name("my_package"), "my-package");
+    fn test_normalise_dependency_version() {
+        assert_eq!(normalise_dependency_version("1.0.0"), "1");
+        assert_eq!(normalise_dependency_version("1.2.0"), "1.2");
+        assert_eq!(normalise_dependency_version("1.2.3"), "1.2.3");
+    }
+
+    // Compute changes methods
+
+    const PKG1_NAME: &str = "package1";
+    const PKG1_VERSION: &str = "1.0.0";
+
+    const PKG2_NAME: &str = "package2";
+    const PKG2_VERSION: &str = "2.0.0";
+    const PKG2_LOCK_VERSION: &str = "2.1.0";
+
+    const OPERATOR: &str = "==";
+
+    fn mock_pyproject_deps() -> Vec<PyprojectDependency> {
+        vec![
+            PyprojectDependency {
+                name: PKG1_NAME.to_string(),
+                normalised_name: PKG1_NAME.to_string(),
+                version: Some(PKG1_VERSION.to_string()),
+                operator: Some(OPERATOR.to_string()),
+                suffix: None,
+                group: None,
+            },
+            PyprojectDependency {
+                name: PKG2_NAME.to_string(),
+                normalised_name: PKG2_NAME.to_string(),
+                version: Some(PKG2_VERSION.to_string()),
+                operator: Some(OPERATOR.to_string()),
+                suffix: None,
+                group: None,
+            },
+        ]
+    }
+
+    fn mock_lock_deps() -> Vec<LockDependency> {
+        vec![
+            LockDependency {
+                name: PKG1_NAME.to_string(),
+                normalised_name: PKG1_NAME.to_string(),
+                version: PKG1_VERSION.to_string(),
+            },
+            LockDependency {
+                name: PKG2_NAME.to_string(),
+                normalised_name: PKG2_NAME.to_string(),
+                version: PKG2_LOCK_VERSION.to_string(),
+            },
+        ]
+    }
+    #[test]
+    fn test_map_dependencies() {
+        let mapped = map_dependencies(&mock_pyproject_deps(), &mock_lock_deps());
+        assert_eq!(mapped.len(), 2);
+        assert_eq!(mapped[0].pyproject.name, PKG1_NAME);
+        assert_eq!(mapped[0].lock.version, PKG1_VERSION);
+        assert_eq!(mapped[1].pyproject.name, PKG2_NAME);
+        assert_eq!(mapped[1].lock.version, PKG2_LOCK_VERSION);
     }
 
     #[test]
-    fn test_normalize_dots_and_dashes() {
-        assert_eq!(normalize_name("My.Cool-Package"), "my-cool-package");
+    fn test_compute_dependency_changes() {
+        let mapped = map_dependencies(&mock_pyproject_deps(), &mock_lock_deps());
+        let changes = compute_dependency_changes(&mapped);
+        assert_eq!(changes.len(), 1);
+        assert_eq!(changes[0].name, PKG2_NAME);
+        assert_eq!(changes[0].old, PKG2_VERSION);
+        assert_eq!(changes[0].new, PKG2_LOCK_VERSION);
     }
 
     #[test]
-    fn test_normalize_consecutive_separators() {
-        // PEP 503: runs of [-_.] collapse to a single '-'
-        assert_eq!(normalize_name("weird___name"), "weird-name");
+    fn test_print_diff() {
+        let changes = vec![DependencyChange {
+            name: PKG2_NAME.to_string(),
+            operator: Some(OPERATOR.to_string()),
+            old: PKG2_VERSION.to_string(),
+            new: PKG2_LOCK_VERSION.to_string(),
+            suffix: None,
+        }];
+        print_diff(&changes);
     }
 }

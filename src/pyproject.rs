@@ -4,7 +4,7 @@ use std::path::Path;
 use toml::Value;
 use toml_edit::{DocumentMut, Item};
 
-use uv_align::{DependencyChange, PyprojectDependency, get_error_msg};
+use uv_align::{DependencyChange, PyprojectDependency, get_error_msg, normalise_dependency_name};
 
 // ─── Parsing ─────────────────────────────────────────────────────────────────
 
@@ -95,7 +95,7 @@ fn parse_pep508(spec: &str, group: Option<String>) -> Option<PyprojectDependency
     if raw_name.is_empty() {
         return None;
     }
-    let normalised_name = uv_align::normalize_name(raw_name);
+    let normalised_name = normalise_dependency_name(raw_name);
 
     // Everything after the name (and optional extras) is the version specifier
     let rest = spec[name_end..].trim();
@@ -285,8 +285,6 @@ pub fn apply_changes(
 
     Ok(())
 }
-
-// ─── Tests ───────────────────────────────────────────────────────────────────
 
 #[cfg(test)]
 mod tests {
