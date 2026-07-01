@@ -78,10 +78,10 @@ pub fn validate_root_directory_exists(root_path: &path::Path) -> Result<(), anyh
     if root_path.exists() && root_path.is_dir() {
         Ok(())
     } else {
-        return Err(anyhow::anyhow!(get_error_msg(&format!(
+        Err(anyhow::anyhow!(get_error_msg(&format!(
             "The specified path does not exist or is not a directory: {}",
             root_path.display().bright_red()
-        ))));
+        ))))
     }
 }
 
@@ -92,11 +92,11 @@ pub fn validate_file_exists(filepath: &path::Path) -> Result<(), anyhow::Error> 
     if filepath.exists() {
         Ok(())
     } else {
-        return Err(anyhow::anyhow!(get_error_msg(&format!(
+        Err(anyhow::anyhow!(get_error_msg(&format!(
             "The required file '{}' does not exist at: {}",
             filepath.display().bright_red(),
             cwd.join(filepath).display().bright_red()
-        ))));
+        ))))
     }
 }
 
@@ -106,13 +106,11 @@ pub fn validate_file_exists(filepath: &path::Path) -> Result<(), anyhow::Error> 
 pub fn check_uv_command() -> Result<(), anyhow::Error> {
     match std::process::Command::new("uv").arg("--version").output() {
         Ok(_) => Ok(()),
-        Err(e) => {
-            return Err(anyhow::anyhow!(get_error_msg(&format!(
-                "Failed to execute '{}'. Ensure it is installed and available in the PATH. Error: {}",
-                "uv".bright_red(),
-                e.to_string().bright_red()
-            ))));
-        }
+        Err(e) => Err(anyhow::anyhow!(get_error_msg(&format!(
+            "Failed to execute '{}'. Ensure it is installed and available in the PATH. Error: {}",
+            "uv".bright_red(),
+            e.to_string().bright_red()
+        )))),
     }
 }
 
