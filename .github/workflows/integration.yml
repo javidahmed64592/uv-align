@@ -30,18 +30,14 @@ jobs:
       - name: Setup Python ${{ matrix.python-version }}
         run: uv python install ${{ matrix.python-version }}
 
-      - name: Build wheel with maturin
-        id: build-wheel
+      - name: Install tool in virtual environment
         run: |
-          uvx maturin build --release
-          WHEEL=$(ls target/wheels/*.whl | head -n 1)
-          echo "WHEEL=$WHEEL" >> $GITHUB_OUTPUT
-
-      - name: Install from built wheel
-        run: uv tool install ${{ steps.build-wheel.outputs.WHEEL }}
+          sed -i "s/^.*$/${{ matrix.python-version }}/" .python-version
+          uv venv
+          uv pip install .
 
       - name: Verify installation
-        run: uv tool run uv-align --help
+        run: uv run uv-align --help
 
       - name: Run tool (Project root)
-        run: uv tool run uv-align -y
+        run: uv run uv-align -y
