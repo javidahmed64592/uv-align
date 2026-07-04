@@ -34,5 +34,11 @@ jobs:
 
       - name: Run tool (tests/fixtures/sample-one)
         run: |
+          echo "Running tool..."
           uv run uv-align -y tests/fixtures/sample-one
+
+          echo "Checking if the output matches the expected output..."
           diff tests/fixtures/sample-one/pyproject.toml tests/fixtures/sample-one/pyproject.toml.expected
+
+          echo "Ensuring dependencies can be updated..."
+          uv run uv-align -yu tests/fixtures/sample-one
