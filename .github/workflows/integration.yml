@@ -32,8 +32,7 @@ jobs:
 
       - name: Install tool in virtual environment
         run: |
-          sed -i "s/^.*$/${{ matrix.python-version }}/" .python-version
-          uv venv
+          uv venv --python ${{ matrix.python-version }}
           uv pip install .
 
       - name: Verify installation
