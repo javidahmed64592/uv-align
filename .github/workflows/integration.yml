@@ -31,15 +31,14 @@ jobs:
         run: uv python install ${{ matrix.python-version }}
 
       - name: Build wheel with maturin
+        id: build-wheel
         run: |
           uvx maturin build --release
           WHEEL=$(ls target/wheels/*.whl | head -n 1)
-          echo "WHEEL=$WHEEL" >> $GITHUB_ENV
-        id: build-wheel
+          echo "WHEEL=$WHEEL" >> $GITHUB_OUTPUT
 
       - name: Install from built wheel
-        run: |
-          uv tool install ${{ steps.build-wheel.outputs.WHEEL }}
+        run: uv tool install ${{ steps.build-wheel.outputs.WHEEL }}
 
       - name: Verify installation
         run: uv tool run uv-align --help
