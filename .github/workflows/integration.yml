@@ -8,7 +8,7 @@ on:
 
 jobs:
   integration-tests:
-    name: Test Python ${{ matrix.python-version }}
+    name: ${{ matrix.os }} Python ${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -33,15 +33,16 @@ jobs:
       - name: Build wheel with maturin
         run: |
           uvx maturin build --release
-
-      - name: Install uv-align from built wheel
-        shell: bash
-        run: |
           WHEEL=$(ls target/wheels/*.whl | head -n 1)
-          uv tool install "$WHEEL"
+          echo "WHEEL=$WHEEL" >> $GITHUB_ENV
+        id: build-wheel
 
-      - name: Verify uv-align installation
+      - name: Install from built wheel
+        run: |
+          uv tool install ${{ steps.build-wheel.outputs.WHEEL }}
+
+      - name: Verify installation
         run: uv tool run uv-align --help
 
-      - name: Run integration test - auto-approve
+      - name: Run tool (Project root)
         run: uv tool run uv-align -y
