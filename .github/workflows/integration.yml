@@ -8,13 +8,12 @@ on:
 
 jobs:
   integration-tests:
-    name: ${{ matrix.os }} Python ${{ matrix.python-version }}
+    name: Integration - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
 
     steps:
       - uses: actions/checkout@v6
@@ -22,17 +21,11 @@ jobs:
       - name: Install Rust
         uses: actions-rust-lang/setup-rust-toolchain@v1
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v7
-        with:
-          enable-cache: true
+      - uses: javidahmed64592/actions-template-python/actions/setup/setup-uv-python@main
+      - uses: javidahmed64592/actions-template-python/actions/setup/install-python-core@main
 
-      - name: Setup Python ${{ matrix.python-version }}
-        run: uv python install ${{ matrix.python-version }}
-
-      - name: Install tool in virtual environment
+      - name: Install tool
         run: |
-          uv venv --python ${{ matrix.python-version }}
           uv pip install .
 
       - name: Verify installation
