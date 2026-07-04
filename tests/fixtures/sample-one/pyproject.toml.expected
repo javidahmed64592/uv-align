@@ -1,0 +1,14 @@
+[project]
+name = "sample-one"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "requests>=2.34.2,<3.0.0",
+    "numpy~=1.26",
+    "Django==4.2.0",
+    "click!=8.1.0",
+    "python-dateutil>=2.9",
+    "PyYAML>=6.0",
+    "typing_extensions>=4.0; python_version < '3.11'",
+    "importlib-metadata>=9.0",
+]

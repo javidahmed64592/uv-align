@@ -28,4 +28,11 @@ jobs:
         run: uv run uv-align --help
 
       - name: Run tool (Project root)
-        run: uv run uv-align -y
+        run: |
+          uv run uv-align --check
+          uv run uv-align -yu
+
+      - name: Run tool (tests/fixtures/sample-one)
+        run: |
+          uv run uv-align -y tests/fixtures/sample-one
+          diff tests/fixtures/sample-one/pyproject.toml tests/fixtures/sample-one/pyproject.toml.expected
