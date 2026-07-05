@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added integration tests to verify the tool's functionality with various `pyproject.toml` configurations, including different dependency formats, extras, and groups.
 - Added alphabetical sorting of dependencies when printing diffs.
 
-### Changes
+### Changed
 
 - Changed `--check` exit to use a warning message instead of a success message when dependencies are not aligned.
 - **Development:** Added `.gitattributes` to enforce consistent LF line endings for integration test fixtures.
