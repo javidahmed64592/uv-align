@@ -314,6 +314,10 @@ pub fn compute_dependency_changes(mapped_deps: &[MappedDependency]) -> Vec<Depen
 
 /// Print the differences between the old and new versions of dependencies.
 pub fn print_diff(changes: &[DependencyChange]) {
+    // Sort changes alphabetically by dependency name
+    let mut changes = changes.to_vec();
+    changes.sort_by(|a, b| a.name.cmp(&b.name));
+
     for change in changes {
         println!(
             "{} {:<16} {}{}{}",
