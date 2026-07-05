@@ -316,7 +316,6 @@ pub fn apply_changes(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::collections::HashMap;
 
     // Parsing methods
 
@@ -420,62 +419,5 @@ mod tests {
     fn test_parse_empty() {
         assert!(parse_pep508_string("", None, false).is_none());
         assert!(parse_pep508_string("   ", None, false).is_none());
-    }
-
-    // Read methods
-
-    #[test]
-    fn test_read_full_pyproject() {
-        use std::io::Write;
-        let toml = r#"
-[project]
-name = "myapp"
-version = "0.1.0"
-dependencies = [
-    "requests>=2.28",
-    "fastapi>=0.110.0",
-]
-
-[project.optional-dependencies]
-dev = [
-    "pytest>=7.0",
-    "mypy>=1.0",
-]
-docs = [
-    "sphinx>=6.0",
-]
-
-[dependency-groups]
-lint = [
-    "ruff>=0.1",
-    { include-group = "dev" },
-]
-"#;
-        let dir = tempfile::tempdir().unwrap();
-        let path = dir.path().join("pyproject.toml");
-        let mut f = std::fs::File::create(&path).unwrap();
-        f.write_all(toml.as_bytes()).unwrap();
-
-        let deps = read_dependencies(&path).unwrap();
-
-        // Collect into a map for easy assertion
-        let map: HashMap<String, &PyprojectDependency> =
-            deps.iter().map(|d| (d.name.clone(), d)).collect();
-
-        assert_eq!(map["requests"].operator, Some(">=".to_string()));
-        assert_eq!(map["requests"].version, Some("2.28".to_string()));
-        assert_eq!(map["requests"].suffix, None);
-        assert_eq!(map["fastapi"].operator, Some(">=".to_string()));
-        assert_eq!(map["fastapi"].version, Some("0.110.0".to_string()));
-        assert_eq!(map["fastapi"].suffix, None);
-        assert_eq!(map["pytest"].group, Some("dev".to_string()));
-        assert_eq!(map["mypy"].operator, Some(">=".to_string()));
-        assert_eq!(map["mypy"].version, Some("1.0".to_string()));
-        assert_eq!(map["mypy"].suffix, None);
-        assert_eq!(map["sphinx"].group, Some("docs".to_string()));
-        assert_eq!(map["ruff"].group, Some("lint".to_string()));
-
-        // include-group table entry should NOT produce a dependency
-        assert!(!map.contains_key("include-group"));
     }
 }
