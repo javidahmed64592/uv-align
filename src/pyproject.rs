@@ -119,14 +119,17 @@ fn parse_pep508_string(
     // Everything after the name (and optional extras) is the version specifier
     let rest = spec[name_end..].trim();
 
-    // Skip optional extras block e.g. [standard], [dev,docs]
-    let rest = if rest.starts_with('[') {
+    // Capture optional extras block e.g. [standard], [dev,docs]
+    let (extras, rest) = if rest.starts_with('[') {
         match rest.find(']') {
-            Some(idx) => rest[idx + 1..].trim(),
-            None => rest, // malformed extras, keep going
+            Some(idx) => {
+                let extras_str = &rest[..=idx]; // includes the brackets
+                (Some(extras_str.to_string()), rest[idx + 1..].trim())
+            }
+            None => (None, rest), // malformed extras, keep going
         }
     } else {
-        rest
+        (None, rest)
     };
 
     // Parse the remaining constraint string e.g. ">=0.110.0" or ">=0.24,<1.0"
@@ -137,6 +140,7 @@ fn parse_pep508_string(
         normalised_name,
         operator: constraint.operator,
         version: constraint.version,
+        extras,
         suffix: constraint.suffix,
         group,
         is_dependency_group,
@@ -274,10 +278,11 @@ pub fn apply_changes(
         };
 
         // Rebuild the full PEP 508 string with the updated version, preserving
-        // the original operator and any suffix constraints e.g. ",<1.0"
+        // the original operator, extras, and any suffix constraints e.g. ",<1.0"
         let new_spec = format!(
-            "{}{}{}{}",
+            "{}{}{}{}{}",
             dep.name,
+            dep.extras.as_deref().unwrap_or(""),
             change.operator.as_deref().unwrap_or(""),
             change.new,
             dep.suffix.as_deref().unwrap_or("")
@@ -392,9 +397,10 @@ mod tests {
         assert_eq!(dep.suffix, Some(",<1.0".to_string()));
     }
     #[test]
-    fn test_parse_extras_ignored() {
+    fn test_parse_extras_preserved() {
         let dep = parse_pep508_string("black[d]>=23.0", None, false).unwrap();
         assert_eq!(dep.name, "black");
+        assert_eq!(dep.extras, Some("[d]".to_string()));
         assert_eq!(dep.operator, Some(">=".to_string()));
         assert_eq!(dep.version, Some("23.0".to_string()));
         assert_eq!(dep.suffix, None);

@@ -15,6 +15,8 @@ pub struct PyprojectDependency {
     pub version: Option<String>,
     /// The operator of the dependency, if any (">=", "==", "~=", etc.).
     pub operator: Option<String>,
+    /// The extras of the dependency, if any (e.g. `[http2]`, `[dev,docs]`).
+    pub extras: Option<String>,
     /// The suffix of the dependency, if any (",<1.0" or ",!=1.0.0").
     pub suffix: Option<String>,
     /// The group of the dependency, if any.
@@ -462,6 +464,7 @@ mod tests {
                 normalised_name: PKG1_NAME.to_string(),
                 version: Some(PKG1_VERSION.to_string()),
                 operator: Some(PKG1_OPERATOR.to_string()),
+                extras: None,
                 suffix: None,
                 group: None,
                 is_dependency_group: false,
@@ -471,6 +474,7 @@ mod tests {
                 normalised_name: PKG2_NAME.to_string(),
                 version: Some(PKG2_VERSION.to_string()),
                 operator: Some(PKG2_OPERATOR.to_string()),
+                extras: None,
                 suffix: None,
                 group: None,
                 is_dependency_group: false,
@@ -480,6 +484,7 @@ mod tests {
                 normalised_name: PKG3_NAME.to_string(),
                 version: Some(PKG3_VERSION.to_string()),
                 operator: Some(PKG3_OPERATOR.to_string()),
+                extras: None,
                 suffix: None,
                 group: None,
                 is_dependency_group: false,
