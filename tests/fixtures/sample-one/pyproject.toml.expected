@@ -4,12 +4,12 @@ version = "0.1.0"
 requires-python = ">=3.13"
 dependencies = [
     "requests>=2.34.2,<3.0.0",
-    "numpy~=1.26",
+    "numpy~=1.26.4",
     "Django==4.2.0",
     "click!=8.1.0",
-    "python-dateutil>=2.9",   # keep this comment
-    "PyYAML>=6.0",
+    "python-dateutil>=2.9.0.post0",   # keep this comment
+    "PyYAML>=6.0.3",
     "typing_extensions>=4.0; python_version < '3.11'",
-    "importlib-metadata>=9.0",
+    "importlib-metadata>=9.0.0",
     "template-python @ git+https://github.com/javidahmed64592/template-python.git",
 ]

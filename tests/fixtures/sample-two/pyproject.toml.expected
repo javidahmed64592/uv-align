@@ -7,9 +7,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-test = ["pytest>=9.1", "pytest-cov>=7.1"]
-docs = ["sphinx>=9.1"]
+test = ["pytest>=9.1.1", "pytest-cov>=7.1.0"]
+docs = ["sphinx>=9.1.0"]
 
 [dependency-groups]
 dev = ["ruff>=0.15.20", "ty>=0.0.56"]
-lint = [{include-group = "dev"}, "black>=26.5"]
+lint = [{include-group = "dev"}, "black>=26.5.1"]
