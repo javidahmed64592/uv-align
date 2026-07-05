@@ -19,6 +19,9 @@ pub struct PyprojectDependency {
     pub suffix: Option<String>,
     /// The group of the dependency, if any.
     pub group: Option<String>,
+    /// Whether this dependency is from `[dependency-groups]` (PEP 735) rather than
+    /// `[project.optional-dependencies]`.
+    pub is_dependency_group: bool,
 }
 
 /// A struct representing a dependency as read from `uv.lock`.
@@ -461,6 +464,7 @@ mod tests {
                 operator: Some(PKG1_OPERATOR.to_string()),
                 suffix: None,
                 group: None,
+                is_dependency_group: false,
             },
             PyprojectDependency {
                 name: PKG2_NAME.to_string(),
@@ -469,6 +473,7 @@ mod tests {
                 operator: Some(PKG2_OPERATOR.to_string()),
                 suffix: None,
                 group: None,
+                is_dependency_group: false,
             },
             PyprojectDependency {
                 name: PKG3_NAME.to_string(),
@@ -477,6 +482,7 @@ mod tests {
                 operator: Some(PKG3_OPERATOR.to_string()),
                 suffix: None,
                 group: None,
+                is_dependency_group: false,
             },
         ]
     }
