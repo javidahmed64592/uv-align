@@ -294,6 +294,9 @@ pub fn compute_dependency_changes(mapped_deps: &[MappedDependency]) -> Vec<Depen
 
             if normalise_dependency_version(pyproject_version)
                 != normalise_dependency_version(lock_version)
+
+                // Skip != operator in dependencies when checking for updates
+                && mapped.pyproject.operator.as_deref() != Some("!=")
             {
                 changes.push(DependencyChange {
                     name: mapped.pyproject.name.clone(),
@@ -433,12 +436,17 @@ mod tests {
 
     const PKG1_NAME: &str = "package1";
     const PKG1_VERSION: &str = "1.0.0";
+    const PKG1_OPERATOR: &str = "==";
 
     const PKG2_NAME: &str = "package2";
     const PKG2_VERSION: &str = "2.0.0";
     const PKG2_LOCK_VERSION: &str = "2.1.0";
+    const PKG2_OPERATOR: &str = ">=";
 
-    const OPERATOR: &str = "==";
+    const PKG3_NAME: &str = "package3";
+    const PKG3_VERSION: &str = "2.0.0";
+    const PKG3_LOCK_VERSION: &str = "2.1.0";
+    const PKG3_OPERATOR: &str = "!=";
 
     fn mock_pyproject_deps() -> Vec<PyprojectDependency> {
         vec![
@@ -446,7 +454,7 @@ mod tests {
                 name: PKG1_NAME.to_string(),
                 normalised_name: PKG1_NAME.to_string(),
                 version: Some(PKG1_VERSION.to_string()),
-                operator: Some(OPERATOR.to_string()),
+                operator: Some(PKG1_OPERATOR.to_string()),
                 suffix: None,
                 group: None,
             },
@@ -454,7 +462,15 @@ mod tests {
                 name: PKG2_NAME.to_string(),
                 normalised_name: PKG2_NAME.to_string(),
                 version: Some(PKG2_VERSION.to_string()),
-                operator: Some(OPERATOR.to_string()),
+                operator: Some(PKG2_OPERATOR.to_string()),
+                suffix: None,
+                group: None,
+            },
+            PyprojectDependency {
+                name: PKG3_NAME.to_string(),
+                normalised_name: PKG3_NAME.to_string(),
+                version: Some(PKG3_VERSION.to_string()),
+                operator: Some(PKG3_OPERATOR.to_string()),
                 suffix: None,
                 group: None,
             },
@@ -473,16 +489,23 @@ mod tests {
                 normalised_name: PKG2_NAME.to_string(),
                 version: PKG2_LOCK_VERSION.to_string(),
             },
+            LockDependency {
+                name: PKG3_NAME.to_string(),
+                normalised_name: PKG3_NAME.to_string(),
+                version: PKG3_LOCK_VERSION.to_string(),
+            },
         ]
     }
     #[test]
     fn test_map_dependencies() {
         let mapped = map_dependencies(&mock_pyproject_deps(), &mock_lock_deps());
-        assert_eq!(mapped.len(), 2);
+        assert_eq!(mapped.len(), 3);
         assert_eq!(mapped[0].pyproject.name, PKG1_NAME);
         assert_eq!(mapped[0].lock.version, PKG1_VERSION);
         assert_eq!(mapped[1].pyproject.name, PKG2_NAME);
         assert_eq!(mapped[1].lock.version, PKG2_LOCK_VERSION);
+        assert_eq!(mapped[2].pyproject.name, PKG3_NAME);
+        assert_eq!(mapped[2].lock.version, PKG3_LOCK_VERSION);
     }
 
     #[test]
@@ -499,7 +522,7 @@ mod tests {
     fn test_print_diff() {
         let changes = vec![DependencyChange {
             name: PKG2_NAME.to_string(),
-            operator: Some(OPERATOR.to_string()),
+            operator: Some(PKG2_OPERATOR.to_string()),
             old: PKG2_VERSION.to_string(),
             new: PKG2_LOCK_VERSION.to_string(),
             suffix: None,
