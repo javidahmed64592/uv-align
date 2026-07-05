@@ -3,6 +3,7 @@
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json&style=flat-square)](https://docs.astral.sh/uv/)
 [![CI](https://img.shields.io/github/actions/workflow/status/javidahmed64592/uv-align/ci.yml?style=flat-square&label=CI&logo=github)](https://github.com/javidahmed64592/uv-align/actions/workflows/ci.yml)
 [![Docs](https://img.shields.io/github/actions/workflow/status/javidahmed64592/uv-align/docs.yml?style=flat-square&label=Docs&logo=github)](https://github.com/javidahmed64592/uv-align/actions/workflows/docs.yml)
+[![Integration](https://img.shields.io/github/actions/workflow/status/javidahmed64592/uv-align/integration.yml?style=flat-square&label=Integration&logo=github)](https://github.com/javidahmed64592/uv-align/actions/workflows/integration.yml)
 [![Publish](https://img.shields.io/github/actions/workflow/status/javidahmed64592/uv-align/publish.yml?style=flat-square&label=Publish&logo=github)](https://github.com/javidahmed64592/uv-align/actions/workflows/publish.yml)
 [![Release](https://img.shields.io/github/actions/workflow/status/javidahmed64592/uv-align/release.yml?style=flat-square&label=Release&logo=github)](https://github.com/javidahmed64592/uv-align/actions/workflows/release.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -140,7 +141,7 @@ If you encounter any issues, please report them on the [GitHub Issues page](http
 Please provide a brief description of how you tried to run the tool, the command you ran, and the output in the terminal.
 Also, provide the contents of your `pyproject.toml`, the expected updated `pyproject.toml`, and your `uv.lock` file if possible.
 
-See the [integration tests](https://github.com/javidahmed64592/uv-align/tree/main/tests/fixtures) to understand how these three files will help reproduce the issue and aid in fixing it.
+See the [integration tests](https://github.com/javidahmed64592/uv-align/actions/workflows/integration.yml) which use [these test fixtures](https://github.com/javidahmed64592/uv-align/tree/main/tests/fixtures) to understand how these three files will help reproduce the issue and aid in fixing it.
 
 ## License
 
