@@ -80,7 +80,7 @@ pub fn validate_root_directory_exists(root_path: &path::Path) -> Result<(), anyh
     } else {
         Err(anyhow::anyhow!(get_error_msg(&format!(
             "The specified path does not exist or is not a directory: {}",
-            root_path.display().bright_red()
+            root_path.display().bright_blue()
         ))))
     }
 }
@@ -94,8 +94,8 @@ pub fn validate_file_exists(filepath: &path::Path) -> Result<(), anyhow::Error> 
     } else {
         Err(anyhow::anyhow!(get_error_msg(&format!(
             "The required file '{}' does not exist at: {}",
-            filepath.display().bright_red(),
-            cwd.join(filepath).display().bright_red()
+            filepath.display().bright_blue(),
+            cwd.join(filepath).display().bright_blue()
         ))))
     }
 }
@@ -108,7 +108,7 @@ pub fn check_uv_command() -> Result<(), anyhow::Error> {
         Ok(_) => Ok(()),
         Err(e) => Err(anyhow::anyhow!(get_error_msg(&format!(
             "Failed to execute '{}'. Ensure it is installed and available in the PATH. Error: {}",
-            "uv".bright_red(),
+            "uv".bright_green(),
             e.to_string().bright_red()
         )))),
     }
@@ -123,7 +123,7 @@ pub fn run_uv_lock_upgrade(update_command: &str) -> Result<Output, anyhow::Error
         .map_err(|e| {
             anyhow::anyhow!(get_error_msg(&format!(
                 "Failed to execute '{}'. Error: {}",
-                update_command.bright_red(),
+                update_command.bright_green(),
                 e.to_string().bright_red()
             )))
         })?;
@@ -131,7 +131,7 @@ pub fn run_uv_lock_upgrade(update_command: &str) -> Result<Output, anyhow::Error
     if !output.status.success() {
         return Err(anyhow::anyhow!(get_error_msg(&format!(
             "'{}' command failed with exit code: {}",
-            update_command.bright_red(),
+            update_command.bright_green(),
             output.status.code().unwrap_or(-1).to_string().bright_red()
         ))));
     }
