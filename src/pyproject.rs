@@ -77,7 +77,11 @@ fn parse_version_constraint(s: &str) -> VersionConstraint {
 /// Extras are discarded as they are not relevant to version bumping.
 /// Environment markers are stripped.
 /// Git/URL dependencies (`@ git+...`) produce `operator = None`, `version = None`.
-fn parse_pep508_string(spec: &str, group: Option<String>) -> Option<PyprojectDependency> {
+fn parse_pep508_string(
+    spec: &str,
+    group: Option<String>,
+    is_dependency_group: bool,
+) -> Option<PyprojectDependency> {
     let spec = spec.trim();
     if spec.is_empty() {
         return None;
@@ -115,14 +119,17 @@ fn parse_pep508_string(spec: &str, group: Option<String>) -> Option<PyprojectDep
     // Everything after the name (and optional extras) is the version specifier
     let rest = spec[name_end..].trim();
 
-    // Skip optional extras block e.g. [standard], [dev,docs]
-    let rest = if rest.starts_with('[') {
+    // Capture optional extras block e.g. [standard], [dev,docs]
+    let (extras, rest) = if rest.starts_with('[') {
         match rest.find(']') {
-            Some(idx) => rest[idx + 1..].trim(),
-            None => rest, // malformed extras, keep going
+            Some(idx) => {
+                let extras_str = &rest[..=idx]; // includes the brackets
+                (Some(extras_str.to_string()), rest[idx + 1..].trim())
+            }
+            None => (None, rest), // malformed extras, keep going
         }
     } else {
-        rest
+        (None, rest)
     };
 
     // Parse the remaining constraint string e.g. ">=0.110.0" or ">=0.24,<1.0"
@@ -133,8 +140,10 @@ fn parse_pep508_string(spec: &str, group: Option<String>) -> Option<PyprojectDep
         normalised_name,
         operator: constraint.operator,
         version: constraint.version,
+        extras,
         suffix: constraint.suffix,
         group,
+        is_dependency_group,
     })
 }
 
@@ -168,7 +177,7 @@ pub fn read_dependencies(path: &Path) -> Result<Vec<PyprojectDependency>> {
         if let Some(Value::Array(arr)) = project.get("dependencies") {
             for item in arr {
                 if let Value::String(s) = item
-                    && let Some(dep) = parse_pep508_string(s, None)
+                    && let Some(dep) = parse_pep508_string(s, None, false)
                 {
                     deps.push(dep);
                 }
@@ -181,7 +190,8 @@ pub fn read_dependencies(path: &Path) -> Result<Vec<PyprojectDependency>> {
                 if let Value::Array(arr) = group_value {
                     for item in arr {
                         if let Value::String(s) = item
-                            && let Some(dep) = parse_pep508_string(s, Some(group_name.clone()))
+                            && let Some(dep) =
+                                parse_pep508_string(s, Some(group_name.clone()), false)
                         {
                             deps.push(dep);
                         }
@@ -200,7 +210,9 @@ pub fn read_dependencies(path: &Path) -> Result<Vec<PyprojectDependency>> {
                 for item in arr {
                     match item {
                         Value::String(s) => {
-                            if let Some(dep) = parse_pep508_string(s, Some(group_name.clone())) {
+                            if let Some(dep) =
+                                parse_pep508_string(s, Some(group_name.clone()), true)
+                            {
                                 deps.push(dep);
                             }
                         }
@@ -266,22 +278,27 @@ pub fn apply_changes(
         };
 
         // Rebuild the full PEP 508 string with the updated version, preserving
-        // the original operator and any suffix constraints e.g. ",<1.0"
+        // the original operator, extras, and any suffix constraints e.g. ",<1.0"
         let new_spec = format!(
-            "{}{}{}{}",
+            "{}{}{}{}{}",
             dep.name,
+            dep.extras.as_deref().unwrap_or(""),
             change.operator.as_deref().unwrap_or(""),
             change.new,
             dep.suffix.as_deref().unwrap_or("")
         );
 
-        match &dep.group {
+        match (&dep.group, dep.is_dependency_group) {
             // [project.dependencies]
-            None => {
+            (None, _) => {
                 replace_in_array(&mut doc["project"]["dependencies"], &dep.name, &new_spec);
             }
+            // [dependency-groups.<group>] (PEP 735)
+            (Some(group), true) => {
+                replace_in_array(&mut doc["dependency-groups"][group], &dep.name, &new_spec);
+            }
             // [project.optional-dependencies.<group>]
-            Some(group) => {
+            (Some(group), false) => {
                 replace_in_array(
                     &mut doc["project"]["optional-dependencies"][group],
                     &dep.name,
@@ -304,7 +321,6 @@ pub fn apply_changes(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::collections::HashMap;
 
     // Parsing methods
 
@@ -328,7 +344,7 @@ mod tests {
 
     #[test]
     fn test_parse_bare_name() {
-        let dep = parse_pep508_string("requests", None).unwrap();
+        let dep = parse_pep508_string("requests", None, false).unwrap();
         assert_eq!(dep.name, "requests");
         assert_eq!(dep.operator, None);
         assert_eq!(dep.version, None);
@@ -338,7 +354,7 @@ mod tests {
 
     #[test]
     fn test_parse_gte_constraint() {
-        let dep = parse_pep508_string("fastapi>=0.110.0", None).unwrap();
+        let dep = parse_pep508_string("fastapi>=0.110.0", None, false).unwrap();
         assert_eq!(dep.name, "fastapi");
         assert_eq!(dep.operator, Some(">=".to_string()));
         assert_eq!(dep.version, Some("0.110.0".to_string()));
@@ -347,7 +363,7 @@ mod tests {
 
     #[test]
     fn test_parse_eq_constraint() {
-        let dep = parse_pep508_string("pydantic==2.6.1", None).unwrap();
+        let dep = parse_pep508_string("pydantic==2.6.1", None, false).unwrap();
         assert_eq!(dep.name, "pydantic");
         assert_eq!(dep.operator, Some("==".to_string()));
         assert_eq!(dep.version, Some("2.6.1".to_string()));
@@ -356,7 +372,7 @@ mod tests {
 
     #[test]
     fn test_parse_compatible_release() {
-        let dep = parse_pep508_string("numpy~=1.24", None).unwrap();
+        let dep = parse_pep508_string("numpy~=1.24", None, false).unwrap();
         assert_eq!(dep.name, "numpy");
         assert_eq!(dep.operator, Some("~=".to_string()));
         assert_eq!(dep.version, Some("1.24".to_string()));
@@ -365,7 +381,7 @@ mod tests {
 
     #[test]
     fn test_parse_not_equal() {
-        let dep = parse_pep508_string("celery!=4.0", None).unwrap();
+        let dep = parse_pep508_string("celery!=4.0", None, false).unwrap();
         assert_eq!(dep.name, "celery");
         assert_eq!(dep.operator, Some("!=".to_string()));
         assert_eq!(dep.version, Some("4.0".to_string()));
@@ -374,16 +390,17 @@ mod tests {
 
     #[test]
     fn test_parse_multiple_specifiers() {
-        let dep = parse_pep508_string("httpx>=0.24,<1.0", None).unwrap();
+        let dep = parse_pep508_string("httpx>=0.24,<1.0", None, false).unwrap();
         assert_eq!(dep.name, "httpx");
         assert_eq!(dep.operator, Some(">=".to_string()));
         assert_eq!(dep.version, Some("0.24".to_string()));
         assert_eq!(dep.suffix, Some(",<1.0".to_string()));
     }
     #[test]
-    fn test_parse_extras_ignored() {
-        let dep = parse_pep508_string("black[d]>=23.0", None).unwrap();
+    fn test_parse_extras_preserved() {
+        let dep = parse_pep508_string("black[d]>=23.0", None, false).unwrap();
         assert_eq!(dep.name, "black");
+        assert_eq!(dep.extras, Some("[d]".to_string()));
         assert_eq!(dep.operator, Some(">=".to_string()));
         assert_eq!(dep.version, Some("23.0".to_string()));
         assert_eq!(dep.suffix, None);
@@ -391,7 +408,7 @@ mod tests {
 
     #[test]
     fn test_parse_marker_stripped() {
-        let dep = parse_pep508_string("tomli>=2.0 ; python_version < '3.11'", None).unwrap();
+        let dep = parse_pep508_string("tomli>=2.0 ; python_version < '3.11'", None, false).unwrap();
         assert_eq!(dep.name, "tomli");
         assert_eq!(dep.operator, Some(">=".to_string()));
         assert_eq!(dep.version, Some("2.0".to_string()));
@@ -400,70 +417,13 @@ mod tests {
 
     #[test]
     fn test_parse_group_propagated() {
-        let dep = parse_pep508_string("pytest>=7.0", Some("dev".into())).unwrap();
+        let dep = parse_pep508_string("pytest>=7.0", Some("dev".into()), false).unwrap();
         assert_eq!(dep.group, Some("dev".to_string()));
     }
 
     #[test]
     fn test_parse_empty() {
-        assert!(parse_pep508_string("", None).is_none());
-        assert!(parse_pep508_string("   ", None).is_none());
-    }
-
-    // Read methods
-
-    #[test]
-    fn test_read_full_pyproject() {
-        use std::io::Write;
-        let toml = r#"
-[project]
-name = "myapp"
-version = "0.1.0"
-dependencies = [
-    "requests>=2.28",
-    "fastapi>=0.110.0",
-]
-
-[project.optional-dependencies]
-dev = [
-    "pytest>=7.0",
-    "mypy>=1.0",
-]
-docs = [
-    "sphinx>=6.0",
-]
-
-[dependency-groups]
-lint = [
-    "ruff>=0.1",
-    { include-group = "dev" },
-]
-"#;
-        let dir = tempfile::tempdir().unwrap();
-        let path = dir.path().join("pyproject.toml");
-        let mut f = std::fs::File::create(&path).unwrap();
-        f.write_all(toml.as_bytes()).unwrap();
-
-        let deps = read_dependencies(&path).unwrap();
-
-        // Collect into a map for easy assertion
-        let map: HashMap<String, &PyprojectDependency> =
-            deps.iter().map(|d| (d.name.clone(), d)).collect();
-
-        assert_eq!(map["requests"].operator, Some(">=".to_string()));
-        assert_eq!(map["requests"].version, Some("2.28".to_string()));
-        assert_eq!(map["requests"].suffix, None);
-        assert_eq!(map["fastapi"].operator, Some(">=".to_string()));
-        assert_eq!(map["fastapi"].version, Some("0.110.0".to_string()));
-        assert_eq!(map["fastapi"].suffix, None);
-        assert_eq!(map["pytest"].group, Some("dev".to_string()));
-        assert_eq!(map["mypy"].operator, Some(">=".to_string()));
-        assert_eq!(map["mypy"].version, Some("1.0".to_string()));
-        assert_eq!(map["mypy"].suffix, None);
-        assert_eq!(map["sphinx"].group, Some("docs".to_string()));
-        assert_eq!(map["ruff"].group, Some("lint".to_string()));
-
-        // include-group table entry should NOT produce a dependency
-        assert!(!map.contains_key("include-group"));
+        assert!(parse_pep508_string("", None, false).is_none());
+        assert!(parse_pep508_string("   ", None, false).is_none());
     }
 }

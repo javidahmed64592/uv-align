@@ -7,7 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Add integration tests to verify installation and execution of the tool across different operating systems.
+### Added
+
+- Added integration tests to verify installation and execution of the tool across different operating systems.
+- Added integration tests to verify the tool's functionality with various `pyproject.toml` configurations, including different dependency formats, extras, and groups.
+- Added alphabetical sorting of dependencies when printing diffs.
+
+### Changes
+
+- Changed `--check` exit to use a warning message instead of a success message when dependencies are not aligned.
+- **Development:** Added `.gitattributes` to enforce consistent LF line endings for integration test fixtures.
+
+  **Note for Windows Users:** If you have already cloned the repository, your local files likely still use CRLF. To apply the new LF rules to your working directory, run:
+  `git rm --cached -r . && git reset --hard`
+
+  ⚠️ **Warning:** This command discards all uncommitted local changes. **Commit or stash any work before running it.**
+
+### Fixed
+
+- Fixed issue where extras were being stripped from dependencies when aligning dependency versions.
+- Fixed issue where dependencies in `[dependency-groups]` were not being updated correctly.
+- Fixed issue where the `!=` operator was being bumped to a newer version which is not the intended behaviour when avoiding specific versions.
 
 ## [0.1.3] - 2026-07-02
 

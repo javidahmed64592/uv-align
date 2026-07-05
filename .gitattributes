@@ -1,0 +1,7 @@
+* text=auto eol=lf
+
+# Binaries — no line-ending conversion
+*.whl binary
+*.exe binary
+*.dll binary
+*.so  binary

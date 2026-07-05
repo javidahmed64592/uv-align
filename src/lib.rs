@@ -15,10 +15,15 @@ pub struct PyprojectDependency {
     pub version: Option<String>,
     /// The operator of the dependency, if any (">=", "==", "~=", etc.).
     pub operator: Option<String>,
+    /// The extras of the dependency, if any (e.g. `[http2]`, `[dev,docs]`).
+    pub extras: Option<String>,
     /// The suffix of the dependency, if any (",<1.0" or ",!=1.0.0").
     pub suffix: Option<String>,
     /// The group of the dependency, if any.
     pub group: Option<String>,
+    /// Whether this dependency is from `[dependency-groups]` (PEP 735) rather than
+    /// `[project.optional-dependencies]`.
+    pub is_dependency_group: bool,
 }
 
 /// A struct representing a dependency as read from `uv.lock`.
@@ -80,7 +85,7 @@ pub fn validate_root_directory_exists(root_path: &path::Path) -> Result<(), anyh
     } else {
         Err(anyhow::anyhow!(get_error_msg(&format!(
             "The specified path does not exist or is not a directory: {}",
-            root_path.display().bright_red()
+            root_path.display().bright_blue()
         ))))
     }
 }
@@ -94,8 +99,8 @@ pub fn validate_file_exists(filepath: &path::Path) -> Result<(), anyhow::Error> 
     } else {
         Err(anyhow::anyhow!(get_error_msg(&format!(
             "The required file '{}' does not exist at: {}",
-            filepath.display().bright_red(),
-            cwd.join(filepath).display().bright_red()
+            filepath.display().bright_blue(),
+            cwd.join(filepath).display().bright_blue()
         ))))
     }
 }
@@ -108,7 +113,7 @@ pub fn check_uv_command() -> Result<(), anyhow::Error> {
         Ok(_) => Ok(()),
         Err(e) => Err(anyhow::anyhow!(get_error_msg(&format!(
             "Failed to execute '{}'. Ensure it is installed and available in the PATH. Error: {}",
-            "uv".bright_red(),
+            "uv".bright_green(),
             e.to_string().bright_red()
         )))),
     }
@@ -123,7 +128,7 @@ pub fn run_uv_lock_upgrade(update_command: &str) -> Result<Output, anyhow::Error
         .map_err(|e| {
             anyhow::anyhow!(get_error_msg(&format!(
                 "Failed to execute '{}'. Error: {}",
-                update_command.bright_red(),
+                update_command.bright_green(),
                 e.to_string().bright_red()
             )))
         })?;
@@ -131,7 +136,7 @@ pub fn run_uv_lock_upgrade(update_command: &str) -> Result<Output, anyhow::Error
     if !output.status.success() {
         return Err(anyhow::anyhow!(get_error_msg(&format!(
             "'{}' command failed with exit code: {}",
-            update_command.bright_red(),
+            update_command.bright_green(),
             output.status.code().unwrap_or(-1).to_string().bright_red()
         ))));
     }
@@ -294,6 +299,9 @@ pub fn compute_dependency_changes(mapped_deps: &[MappedDependency]) -> Vec<Depen
 
             if normalise_dependency_version(pyproject_version)
                 != normalise_dependency_version(lock_version)
+
+                // Skip != operator in dependencies when checking for updates
+                && mapped.pyproject.operator.as_deref() != Some("!=")
             {
                 changes.push(DependencyChange {
                     name: mapped.pyproject.name.clone(),
@@ -311,6 +319,10 @@ pub fn compute_dependency_changes(mapped_deps: &[MappedDependency]) -> Vec<Depen
 
 /// Print the differences between the old and new versions of dependencies.
 pub fn print_diff(changes: &[DependencyChange]) {
+    // Sort changes alphabetically by dependency name
+    let mut changes = changes.to_vec();
+    changes.sort_by(|a, b| a.name.cmp(&b.name));
+
     for change in changes {
         println!(
             "{} {:<16} {}{}{}",
@@ -433,12 +445,17 @@ mod tests {
 
     const PKG1_NAME: &str = "package1";
     const PKG1_VERSION: &str = "1.0.0";
+    const PKG1_OPERATOR: &str = "==";
 
     const PKG2_NAME: &str = "package2";
     const PKG2_VERSION: &str = "2.0.0";
     const PKG2_LOCK_VERSION: &str = "2.1.0";
+    const PKG2_OPERATOR: &str = ">=";
 
-    const OPERATOR: &str = "==";
+    const PKG3_NAME: &str = "package3";
+    const PKG3_VERSION: &str = "2.0.0";
+    const PKG3_LOCK_VERSION: &str = "2.1.0";
+    const PKG3_OPERATOR: &str = "!=";
 
     fn mock_pyproject_deps() -> Vec<PyprojectDependency> {
         vec![
@@ -446,17 +463,31 @@ mod tests {
                 name: PKG1_NAME.to_string(),
                 normalised_name: PKG1_NAME.to_string(),
                 version: Some(PKG1_VERSION.to_string()),
-                operator: Some(OPERATOR.to_string()),
+                operator: Some(PKG1_OPERATOR.to_string()),
+                extras: None,
                 suffix: None,
                 group: None,
+                is_dependency_group: false,
             },
             PyprojectDependency {
                 name: PKG2_NAME.to_string(),
                 normalised_name: PKG2_NAME.to_string(),
                 version: Some(PKG2_VERSION.to_string()),
-                operator: Some(OPERATOR.to_string()),
+                operator: Some(PKG2_OPERATOR.to_string()),
+                extras: None,
                 suffix: None,
                 group: None,
+                is_dependency_group: false,
+            },
+            PyprojectDependency {
+                name: PKG3_NAME.to_string(),
+                normalised_name: PKG3_NAME.to_string(),
+                version: Some(PKG3_VERSION.to_string()),
+                operator: Some(PKG3_OPERATOR.to_string()),
+                extras: None,
+                suffix: None,
+                group: None,
+                is_dependency_group: false,
             },
         ]
     }
@@ -473,16 +504,23 @@ mod tests {
                 normalised_name: PKG2_NAME.to_string(),
                 version: PKG2_LOCK_VERSION.to_string(),
             },
+            LockDependency {
+                name: PKG3_NAME.to_string(),
+                normalised_name: PKG3_NAME.to_string(),
+                version: PKG3_LOCK_VERSION.to_string(),
+            },
         ]
     }
     #[test]
     fn test_map_dependencies() {
         let mapped = map_dependencies(&mock_pyproject_deps(), &mock_lock_deps());
-        assert_eq!(mapped.len(), 2);
+        assert_eq!(mapped.len(), 3);
         assert_eq!(mapped[0].pyproject.name, PKG1_NAME);
         assert_eq!(mapped[0].lock.version, PKG1_VERSION);
         assert_eq!(mapped[1].pyproject.name, PKG2_NAME);
         assert_eq!(mapped[1].lock.version, PKG2_LOCK_VERSION);
+        assert_eq!(mapped[2].pyproject.name, PKG3_NAME);
+        assert_eq!(mapped[2].lock.version, PKG3_LOCK_VERSION);
     }
 
     #[test]
@@ -499,7 +537,7 @@ mod tests {
     fn test_print_diff() {
         let changes = vec![DependencyChange {
             name: PKG2_NAME.to_string(),
-            operator: Some(OPERATOR.to_string()),
+            operator: Some(PKG2_OPERATOR.to_string()),
             old: PKG2_VERSION.to_string(),
             new: PKG2_LOCK_VERSION.to_string(),
             suffix: None,
