@@ -16,6 +16,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changes
 
 - Changed `--check` exit to use a warning message instead of a success message when dependencies are not aligned.
+- **Development:** Added `.gitattributes` to enforce consistent LF line endings for integration test fixtures.
+
+  **Note for Windows Users:** If you have already cloned the repository, your local files likely still use CRLF. To apply the new LF rules to your working directory, run:
+  `git rm --cached -r . && git reset --hard`
+
+  ⚠️ **Warning:** This command discards all uncommitted local changes. **Commit or stash any work before running it.**
 
 ### Fixed
 
