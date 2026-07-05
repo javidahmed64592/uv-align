@@ -104,7 +104,7 @@ fn main() -> anyhow::Result<()> {
     if cli.check {
         println!(
             "{}",
-            get_success_msg(&format!(
+            get_warning_msg(&format!(
                 "Run '{} {}' without the '{}' flag to apply changes.",
                 "uv-align".bright_green(),
                 cli.path.display().to_string().bright_green(),
