@@ -1,0 +1,15 @@
+[project]
+name = "sample-two"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "httpx[http2]>=0.28.1",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=9.1", "pytest-cov>=7.1"]
+docs = ["sphinx>=9.1"]
+
+[dependency-groups]
+dev = ["ruff>=0.15.20", "ty>=0.0.56"]
+lint = [{include-group = "dev"}, "black>=26.5"]
