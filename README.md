@@ -29,6 +29,7 @@ It does not require a virtual environment as it does not install packages, and n
 - [Quick Guide](#quick-guide)
 - [Usage](#usage)
 - [How It Works](#how-it-works)
+- [Issues](#issues)
 - [License](#license)
 
 ## Installation
@@ -104,9 +105,8 @@ All dependency entries are read from three locations:
 - `[dependency-groups]` - PEP 735 groups supported by uv
 
 Each entry is parsed as a PEP 508 string.
-The package name, version operator (`>=`, `==`, `~=`, etc.), lower-bound version, and any suffix constraints (e.g. `,<1.0`) are extracted separately.
+The package name, version operator (`>=`, `==`, `~=`, etc.), lower-bound version, extras, and any suffix constraints (e.g. `,<1.0`) are extracted separately.
 Git/URL dependencies (e.g. `package @ git+https://...`) are included in the parsed output but have no version to compare, so they are naturally skipped during the diff step.
-Extras (e.g. `package[extra]`) and environment markers (e.g. `; python_version >= '3.11'`) are stripped as they are not relevant to version bumping.
 Package names are normalised per PEP 503 (lowercase, runs of `[-_.]` collapsed to `-`) to ensure consistent matching.
 
 **Step 2 - Parse `uv.lock`**
@@ -124,7 +124,7 @@ Version strings are compared after normalising trailing `.0` components, so `0.2
 **Step 4 - Report or apply**
 
 In `--check` mode, the diff is printed and the tool exits with code 1 if any changes are needed (suitable for CI), or code 0 if everything is already in sync.
-Otherwise, the user is prompted to confirm before changes are applied (or `-y` skips the prompt).
+Without this flag, the user is prompted to confirm before changes are applied (or `-y` skips the prompt).
 Changes are written back to `pyproject.toml` using `toml_edit` - a format-preserving TOML library that modifies only the version numbers, leaving all comments, whitespace, and key ordering intact.
 The original operator and any suffix constraints are preserved verbatim.
 
@@ -133,6 +133,14 @@ The original operator and any suffix constraints are preserved verbatim.
 With `--upgrade`, `uv lock --upgrade` runs first to fetch and resolve the latest compatible versions, updating `uv.lock` accordingly.
 Steps 1–4 then run as normal to align `pyproject.toml` with the newly resolved versions.
 The number of updated, added, and removed packages reported by `uv` is printed as a summary, with full package details available via `--verbose`.
+
+## Issues
+
+If you encounter any issues, please report them on the [GitHub Issues page](https://github.com/javidahmed64592/uv-align/issues).
+Please provide a brief description of how you tried to run the tool, the command you ran, and the output in the terminal.
+Also, provide the contents of your `pyproject.toml`, the expected updated `pyproject.toml`, and your `uv.lock` file if possible.
+
+See the [integration tests](https://github.com/javidahmed64592/uv-align/tree/main/tests/fixtures) to understand how these three files will help reproduce the issue and aid in fixing it.
 
 ## License
 
