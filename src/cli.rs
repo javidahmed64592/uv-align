@@ -8,7 +8,7 @@ use uv_align::get_error_msg;
 
 #[derive(Parser, Debug)]
 #[command(
-    name = "uv-align",
+    name = "uva",
     about = "Align `pyproject.toml` dependency constraints with versions resolved by `uv`"
 )]
 pub struct Cli {

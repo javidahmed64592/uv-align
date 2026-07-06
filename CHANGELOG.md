@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Changed
+
+- Renamed the binary from `uv-align` to `uva` for brevity and ease of use.
+
+  **Note:** If you have included the tool in any automated scripts or CI/CD pipelines, please update the command from `uv-align` to `uva` (see the [README] if you are running as a tool via `uv`) to ensure continued functionality.
+
 ## [0.1.4] - 2026-07-05
 
 ### Added
@@ -75,4 +83,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [0.1.2]: https://github.com/javidahmed64592/uv-align/releases/tag/v0.1.2
 [0.1.1]: https://github.com/javidahmed64592/uv-align/releases/tag/v0.1.1
 [0.1.0]: https://github.com/javidahmed64592/uv-align/releases/tag/v0.1.0
+[README]: https://github.com/javidahmed64592/uv-align/blob/main/README.md
 [SemVer]: https://semver.org

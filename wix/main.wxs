@@ -123,9 +123,9 @@
                         <Component Id='binary0' Guid='*'>
                             <File
                                 Id='exe0'
-                                Name='uv-align.exe'
+                                Name='uva.exe'
                                 DiskId='1'
-                                Source='$(var.CargoTargetBinDir)\uv-align.exe'
+                                Source='$(var.CargoTargetBinDir)\uva.exe'
                                 KeyPath='yes'/>
                         </Component>
                     </Directory>
