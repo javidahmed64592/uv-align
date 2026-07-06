@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-`uv-align` is a Rust command-line tool that synchronizes Python dependency constraints between `pyproject.toml` and `uv.lock`. It bridges the gap when `uv lock --upgrade` updates the lockfile but leaves `pyproject.toml` constraints unchanged.
+`uva` is a Rust command-line tool that synchronizes Python dependency constraints between `pyproject.toml` and `uv.lock`. It bridges the gap when `uv lock --upgrade` updates the lockfile but leaves `pyproject.toml` constraints unchanged.
 
 **Key Principles:**
 
