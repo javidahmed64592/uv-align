@@ -25,12 +25,12 @@ jobs:
       - uses: javidahmed64592/actions-template-python/actions/setup/install-python-core@main
 
       - name: Verify installation
-        run: uv run uva --help
+        run: uv run uv-align --help
 
       - name: Run tool (Project root)
         run: |
-          uv run uva --check
-          uv run uva -yu
+          uv run uv-align --check
+          uv run uv-align -yu
 
       - name: Run Fixture Test - Sample One
         uses: ./.github/actions/run-fixture-test

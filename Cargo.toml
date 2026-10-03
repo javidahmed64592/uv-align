@@ -17,8 +17,7 @@ license = false
 eula = false
 
 [[bin]]
-name = "uva"
-path = "src/main.rs"
+name = "uv-align"
 
 [dependencies]
 anyhow = "1.0.102"

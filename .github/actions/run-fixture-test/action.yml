@@ -11,11 +11,11 @@ runs:
     - name: Run tool on fixture
       run: |
         echo "Running tool on fixture directory..."
-        uv run uva -y ${{ inputs.fixture-directory }}
+        uv run uv-align -y ${{ inputs.fixture-directory }}
 
         echo "Checking if the output matches the expected output..."
         diff ${{ inputs.fixture-directory }}/pyproject.toml ${{ inputs.fixture-directory }}/pyproject.toml.expected
 
         echo "Ensuring dependencies can be updated..."
-        uv run uva -yu ${{ inputs.fixture-directory }}
+        uv run uv-align -yu ${{ inputs.fixture-directory }}
       shell: bash

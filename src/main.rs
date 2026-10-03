@@ -106,7 +106,7 @@ fn main() -> anyhow::Result<()> {
             "{}",
             get_warning_msg(&format!(
                 "Run '{} {}' without the '{}' flag to apply changes.",
-                "uva".bright_green(),
+                "uv-align".bright_green(),
                 cli.path.display().to_string().bright_green(),
                 "--check".bright_green()
             ))
