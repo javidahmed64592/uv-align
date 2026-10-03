@@ -11,10 +11,10 @@
 <!-- omit from toc -->
 # uv-align
 
-`uva` is a Rust command-line tool that keeps your Python dependency constraints in sync between `pyproject.toml` and `uv.lock`.
+`uv-align` is a Rust command-line tool that keeps your Python dependency constraints in sync between `pyproject.toml` and `uv.lock`.
 
 When you run `uv lock --upgrade`, `uv` resolves and updates `uv.lock` with the latest compatible versions, but leaves the version constraints in `pyproject.toml` untouched.
-This means your declared constraints can drift from what `uv` actually resolved - `uva` bridges that gap.
+This means your declared constraints can drift from what `uv` actually resolved - `uv-align` bridges that gap.
 
 It reads the resolved versions from `uv.lock` and updates the version numbers in `pyproject.toml` accordingly, preserving your existing operators (`>=`, `==`, etc.), upper bounds, environment markers, and formatting.
 It does not require a virtual environment as it does not install packages, and never modifies `uv.lock` directly (`uv` is responsible for that).
@@ -37,18 +37,16 @@ It does not require a virtual environment as it does not install packages, and n
 
 **As a tool (recommended)**
 
-Install `uva` as a global tool:
+Install `uv-align` as a global tool:
 
 ```sh
 uv tool install uv-align
 ```
 
-This adds the `uva` command to your PATH.
-
 If you'd like to run it without installing:
 
 ```sh
-uvx --from uv-align uva
+uvx uv-align
 ```
 
 **As a dev dependency**
@@ -59,21 +57,17 @@ To pin `uv-align` to a specific project, add it to your development dependencies
 uv add uv-align --optional dev
 ```
 
-Once installed, run it as `uva` within the project.
-
 **As a pre-built binary**
 
 Pre-built binaries for Linux, macOS, and Windows are available on the [GitHub Releases page](https://github.com/javidahmed64592/uv-align/releases).
-Download the appropriate binary for your platform, extract it somewhere appropriate, and add it to your PATH.
-You can then invoke it using `uva`.
 
 ## Quick Guide
 
 ```sh
-uva -h      # Show help message
-uva --check # Check for out-of-sync dependencies between `pyproject.toml` and `uv.lock`
-uva -y      # Update any out-of-sync version constraints in `pyproject.toml`
-uva -yu     # Upgrade dependencies and update version constraints in `pyproject.toml`
+uv-align -h      # Show help message
+uv-align --check # Check for out-of-sync dependencies between `pyproject.toml` and `uv.lock`
+uv-align -y      # Update any out-of-sync version constraints in `pyproject.toml`
+uv-align -yu     # Upgrade dependencies and update version constraints in `pyproject.toml`
 ```
 
 Example output:
@@ -85,7 +79,7 @@ Example output:
 ```
 Align `pyproject.toml` dependency constraints with versions resolved by `uv`
 
-Usage: uva [OPTIONS] [PATH]
+Usage: uv-align [OPTIONS] [PATH]
 
 Arguments:
   [PATH]  Path to folder containing `pyproject.toml` and `uv.lock` files [default: .]
@@ -100,7 +94,7 @@ Options:
 
 ## How It Works
 
-`uva` is a file transformer - in its default mode it reads two files and writes one, with no network access or environment inspection.
+`uv-align` is a file transformer - in its default mode it reads two files and writes one, with no network access or environment inspection.
 The optional `--upgrade` flag adds a `uv` invocation that does require network access to fetch updated package metadata.
 
 **Step 1 - Parse `pyproject.toml`**
