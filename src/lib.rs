@@ -289,6 +289,41 @@ pub fn map_dependencies(
     mapped
 }
 
+/// Filter mapped dependencies to only those matching the given package names.
+/// Names are normalised per PEP 503 before comparison. Returns all dependencies when `packages` is empty.
+pub fn filter_mapped_dependencies_by_name(
+    mapped: &[MappedDependency],
+    packages: &[String],
+) -> Vec<MappedDependency> {
+    if packages.is_empty() {
+        return mapped.to_vec();
+    }
+    let normalised: Vec<String> = packages
+        .iter()
+        .map(|p| normalise_dependency_name(p))
+        .collect();
+    mapped
+        .iter()
+        .filter(|m| normalised.contains(&m.pyproject.normalised_name))
+        .cloned()
+        .collect()
+}
+
+/// Return the subset of `packages` whose normalised names are not present in `pyproject_deps`.
+pub fn find_unknown_packages<'a>(
+    packages: &'a [String],
+    pyproject_deps: &[PyprojectDependency],
+) -> Vec<&'a String> {
+    let known: Vec<&str> = pyproject_deps
+        .iter()
+        .map(|d| d.normalised_name.as_str())
+        .collect();
+    packages
+        .iter()
+        .filter(|p| !known.contains(&normalise_dependency_name(p).as_str()))
+        .collect()
+}
+
 /// Check which dependencies in pyproject.toml have different versions in uv.lock and return a list of changes.
 pub fn compute_dependency_changes(mapped_deps: &[MappedDependency]) -> Vec<DependencyChange> {
     let mut changes = Vec::new();
@@ -511,6 +546,7 @@ mod tests {
             },
         ]
     }
+
     #[test]
     fn test_map_dependencies() {
         let mapped = map_dependencies(&mock_pyproject_deps(), &mock_lock_deps());
@@ -524,6 +560,70 @@ mod tests {
     }
 
     #[test]
+    fn test_find_unknown_packages_all_known() {
+        let deps = mock_pyproject_deps();
+        let packages = vec![PKG1_NAME.to_string(), PKG2_NAME.to_string()];
+        let unknown = find_unknown_packages(&packages, &deps);
+        assert!(unknown.is_empty());
+    }
+
+    #[test]
+    fn test_find_unknown_packages_some_unknown() {
+        let deps = mock_pyproject_deps();
+        let packages = vec![PKG1_NAME.to_string(), "ghost-pkg".to_string()];
+        let unknown = find_unknown_packages(&packages, &deps);
+        assert_eq!(unknown.len(), 1);
+        assert_eq!(unknown[0], "ghost-pkg");
+    }
+
+    #[test]
+    fn test_find_unknown_packages_normalised_match() {
+        let deps = mock_pyproject_deps();
+        // "Package1" normalises to "package1" which matches PKG1_NAME
+        let packages = vec!["Package1".to_string()];
+        let unknown = find_unknown_packages(&packages, &deps);
+        assert!(unknown.is_empty());
+    }
+
+    #[test]
+    fn test_find_unknown_packages_empty_input() {
+        let deps = mock_pyproject_deps();
+        let unknown = find_unknown_packages(&[], &deps);
+        assert!(unknown.is_empty());
+    }
+
+    #[test]
+    fn test_filter_mapped_dependencies_by_name_empty_filter() {
+        let mapped = map_dependencies(&mock_pyproject_deps(), &mock_lock_deps());
+        let filtered = filter_mapped_dependencies_by_name(&mapped, &[]);
+        assert_eq!(filtered.len(), 3);
+    }
+
+    #[test]
+    fn test_filter_mapped_dependencies_by_name_single() {
+        let mapped = map_dependencies(&mock_pyproject_deps(), &mock_lock_deps());
+        let filtered = filter_mapped_dependencies_by_name(&mapped, &[PKG2_NAME.to_string()]);
+        assert_eq!(filtered.len(), 1);
+        assert_eq!(filtered[0].pyproject.name, PKG2_NAME);
+    }
+
+    #[test]
+    fn test_filter_mapped_dependencies_by_name_normalised() {
+        let mapped = map_dependencies(&mock_pyproject_deps(), &mock_lock_deps());
+        // package2 with alternate casing/separators should still match
+        let filtered = filter_mapped_dependencies_by_name(&mapped, &["Package2".to_string()]);
+        assert_eq!(filtered.len(), 1);
+        assert_eq!(filtered[0].pyproject.name, PKG2_NAME);
+    }
+
+    #[test]
+    fn test_filter_mapped_dependencies_by_name_unknown() {
+        let mapped = map_dependencies(&mock_pyproject_deps(), &mock_lock_deps());
+        let filtered = filter_mapped_dependencies_by_name(&mapped, &["unknown-pkg".to_string()]);
+        assert_eq!(filtered.len(), 0);
+    }
+
+    #[test]
     fn test_compute_dependency_changes() {
         let mapped = map_dependencies(&mock_pyproject_deps(), &mock_lock_deps());
         let changes = compute_dependency_changes(&mapped);
@@ -531,6 +631,15 @@ mod tests {
         assert_eq!(changes[0].name, PKG2_NAME);
         assert_eq!(changes[0].old, PKG2_VERSION);
         assert_eq!(changes[0].new, PKG2_LOCK_VERSION);
+    }
+
+    #[test]
+    fn test_compute_dependency_changes_with_filter() {
+        let mapped = map_dependencies(&mock_pyproject_deps(), &mock_lock_deps());
+        // package2 is out of sync, package1 is not; filter to package1 only
+        let filtered = filter_mapped_dependencies_by_name(&mapped, &[PKG1_NAME.to_string()]);
+        let changes = compute_dependency_changes(&filtered);
+        assert_eq!(changes.len(), 0);
     }
 
     #[test]
