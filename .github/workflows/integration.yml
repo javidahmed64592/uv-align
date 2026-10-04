@@ -46,3 +46,8 @@ jobs:
         uses: ./.github/actions/run-fixture-test
         with:
           fixture-directory: tests/fixtures/sample-three
+
+      - name: Run Fixture Test - Sample Four
+        uses: ./.github/actions/run-fixture-test
+        with:
+          fixture-directory: tests/fixtures/sample-four
