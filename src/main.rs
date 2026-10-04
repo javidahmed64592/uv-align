@@ -12,14 +12,14 @@ use owo_colors::OwoColorize;
 use pyproject::{apply_changes, read_dependencies};
 use std::path::Path;
 use uv_align::{
-    check_uv_command, compute_dependency_changes, get_success_msg, get_warning_msg,
-    map_dependencies, parse_uv_update_output, print_diff, print_uv_modified_dependencies,
-    run_uv_lock_upgrade, validate_file_exists, validate_root_directory_exists,
+    check_uv_command, compute_dependency_changes, filter_mapped_dependencies_by_name,
+    find_unknown_packages, get_success_msg, get_warning_msg, map_dependencies,
+    parse_uv_update_output, print_diff, print_uv_modified_dependencies, run_uv_lock_upgrade,
+    validate_file_exists, validate_root_directory_exists,
 };
 
 const PYPROJECT_FILENAME: &str = "pyproject.toml";
 const LOCKFILE_FILENAME: &str = "uv.lock";
-const UPDATE_COMMAND: &str = "uv lock --upgrade";
 
 fn main() -> anyhow::Result<()> {
     // Get CLI arguments
@@ -52,10 +52,21 @@ fn main() -> anyhow::Result<()> {
 
     // Upgrade dependencies in `uv.lock` if the upgrade flag is set
     if cli.upgrade {
+        let update_command = if cli.packages.is_empty() {
+            "uv lock --upgrade".to_string()
+        } else {
+            let pkg_args: Vec<String> = cli
+                .packages
+                .iter()
+                .flat_map(|p| ["--upgrade-package".to_string(), p.clone()])
+                .collect();
+            format!("uv lock {}", pkg_args.join(" "))
+        };
+
         println!(
             "Updating dependencies in '{}' using: {}",
             LOCKFILE_FILENAME.bright_blue(),
-            UPDATE_COMMAND.bright_green()
+            update_command.bright_green()
         );
 
         if let Err(error) = check_uv_command() {
@@ -63,7 +74,7 @@ fn main() -> anyhow::Result<()> {
             std::process::exit(127);
         }
 
-        match run_uv_lock_upgrade(UPDATE_COMMAND) {
+        match run_uv_lock_upgrade(&update_command) {
             Ok(output) => {
                 let (updated, added, removed) = parse_uv_update_output(&output);
                 print_uv_modified_dependencies(updated, added, removed, cli.verbose);
@@ -79,7 +90,15 @@ fn main() -> anyhow::Result<()> {
     let dependencies = read_dependencies(pyproject_path)?;
     let lock_versions = read_lock_versions(lockfile_path)?;
 
-    let mapped_dependencies = map_dependencies(&dependencies, &lock_versions);
+    for pkg in find_unknown_packages(&cli.packages, &dependencies) {
+        eprintln!(
+            "{}",
+            get_warning_msg(&format!("Package not found: {}", pkg.bright_yellow(),))
+        );
+    }
+
+    let all_mapped = map_dependencies(&dependencies, &lock_versions);
+    let mapped_dependencies = filter_mapped_dependencies_by_name(&all_mapped, &cli.packages);
     let diff = compute_dependency_changes(&mapped_dependencies);
 
     if diff.is_empty() {

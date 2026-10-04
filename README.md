@@ -64,32 +64,35 @@ Pre-built binaries for Linux, macOS, and Windows are available on the [GitHub Re
 ## Quick Guide
 
 ```sh
-uv-align -h      # Show help message
-uv-align --check # Check for out-of-sync dependencies between `pyproject.toml` and `uv.lock`
-uv-align -y      # Update any out-of-sync version constraints in `pyproject.toml`
-uv-align -yu     # Upgrade dependencies and update version constraints in `pyproject.toml`
+uv-align -h                        # Show help message
+uv-align --check                   # Check for out-of-sync dependencies between `pyproject.toml` and `uv.lock`
+uv-align -y                        # Update any out-of-sync version constraints in `pyproject.toml`
+uv-align -yu                       # Upgrade dependencies and update version constraints in `pyproject.toml`
+uv-align -y numpy matplotlib       # Update only the specified packages
+uv-align -yu numpy matplotlib      # Upgrade and update only the specified packages
 ```
 
 Example output:
 
-![Example Usage](https://github.com/javidahmed64592/uv-align/blob/main/docs/usage.png)
+![Example Usage](https://github.com/javidahmed64592/uv-align/raw/main/docs/usage.png)
 
 ## Usage
 
 ```
 Align `pyproject.toml` dependency constraints with versions resolved by `uv`
 
-Usage: uv-align [OPTIONS] [PATH]
+Usage: uv-align [OPTIONS] [PACKAGES]...
 
 Arguments:
-  [PATH]  Path to folder containing `pyproject.toml` and `uv.lock` files [default: .]
+  [PACKAGES]...  Specific packages to check or sync (if none specified, all packages are checked)
 
 Options:
-      --check    Show a diff of dependency updates without applying them
-  -y, --yes      Automatically apply all changes without prompting
-  -u, --upgrade  Upgrade dependencies in `uv.lock` with `uv lock --upgrade`
-  -v, --verbose  Show detailed information about dependency updates
-  -h, --help     Print help
+      --path <PATH>  Path to folder containing `pyproject.toml` and `uv.lock` files [default: .]
+      --check        Show a diff of dependency updates without applying them
+  -y, --yes          Automatically apply all changes without prompting
+  -u, --upgrade      Upgrade dependencies in `uv.lock` with `uv lock --upgrade`
+  -v, --verbose      Show detailed information about dependency updates
+  -h, --help         Print help
 ```
 
 ## How It Works
@@ -132,6 +135,7 @@ The original operator and any suffix constraints are preserved verbatim.
 **Step 5 - Upgrade mode (`-u`)**
 
 With `--upgrade`, `uv lock --upgrade` runs first to fetch and resolve the latest compatible versions, updating `uv.lock` accordingly.
+If specific packages are provided (e.g. `uv-align -u numpy`), `uv lock --upgrade-package numpy` is run instead, restricting the upgrade to only those packages.
 Steps 1–4 then run as normal to align `pyproject.toml` with the newly resolved versions.
 The number of updated, added, and removed packages reported by `uv` is printed as a summary, with full package details available via `--verbose`.
 

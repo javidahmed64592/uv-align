@@ -13,7 +13,7 @@ use uv_align::get_error_msg;
 )]
 pub struct Cli {
     /// Path to folder containing `pyproject.toml` and `uv.lock` files
-    #[arg(default_value = ".")]
+    #[arg(long, default_value = ".")]
     pub path: PathBuf,
 
     /// Show a diff of dependency updates without applying them
@@ -31,6 +31,10 @@ pub struct Cli {
     /// Show detailed information about dependency updates
     #[arg(short = 'v', long = "verbose")]
     pub verbose: bool,
+
+    /// Specific packages to check or sync (if none specified, all packages are checked)
+    #[arg(value_name = "PACKAGES", num_args = 0..)]
+    pub packages: Vec<String>,
 }
 
 pub struct CliArgs {
@@ -39,6 +43,7 @@ pub struct CliArgs {
     pub yes: bool,
     pub upgrade: bool,
     pub verbose: bool,
+    pub packages: Vec<String>,
 }
 
 /// Parse command-line arguments and return a `CliArgs` struct
@@ -50,6 +55,7 @@ pub fn parse_cli_args() -> CliArgs {
         yes: cli.yes,
         upgrade: cli.upgrade,
         verbose: cli.verbose,
+        packages: cli.packages,
     }
 }
 
