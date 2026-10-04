@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Changed
+
+- Added filtering of dependencies by name when computing dependency changes. These are specified as command-line arguments after the `uv-align` command.
+- If specifying a directory path, you must now include the `--path` option followed by the path to the directory containing `pyproject.toml` and `uv.lock` files.
+
 ## [0.1.4] - 2026-07-05
 
 ### Added
