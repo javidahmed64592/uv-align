@@ -51,3 +51,4 @@ jobs:
         uses: ./.github/actions/run-fixture-test
         with:
           fixture-directory: tests/fixtures/sample-four
+          package-filter: numpy

@@ -4,6 +4,9 @@ inputs:
   fixture-directory:
     description: "The directory containing the fixture to test."
     required: true
+  package-filter:
+    description: "Optional. The name of the dependency to filter by when computing dependency changes."
+    required: false
 
 runs:
   using: "composite"
@@ -11,11 +14,11 @@ runs:
     - name: Run tool on fixture
       run: |
         echo "Running tool on fixture directory..."
-        uv run uv-align --path ${{ inputs.fixture-directory }} -y
+        uv run uv-align --path ${{ inputs.fixture-directory }} -y ${{ inputs.package-filter }}
 
         echo "Checking if the output matches the expected output..."
         diff ${{ inputs.fixture-directory }}/pyproject.toml ${{ inputs.fixture-directory }}/pyproject.toml.expected
 
         echo "Ensuring dependencies can be updated..."
-        uv run uv-align --path ${{ inputs.fixture-directory }} -yu
+        uv run uv-align --path ${{ inputs.fixture-directory }} -yu ${{ inputs.package-filter }}
       shell: bash
