@@ -59,6 +59,10 @@ pub struct DependencyChange {
     pub new: String,
     /// The suffix of the dependency, if any (",<1.0" or ",!=1.0.0").
     pub suffix: Option<String>,
+    /// The group the dependency belongs to, if any.
+    pub group: Option<String>,
+    /// Whether the dependency is from `[dependency-groups]` (PEP 735).
+    pub is_dependency_group: bool,
 }
 
 // General methods
@@ -344,6 +348,8 @@ pub fn compute_dependency_changes(mapped_deps: &[MappedDependency]) -> Vec<Depen
                     old: pyproject_version.clone(),
                     new: lock_version.clone(),
                     suffix: mapped.pyproject.suffix.clone(),
+                    group: mapped.pyproject.group.clone(),
+                    is_dependency_group: mapped.pyproject.is_dependency_group,
                 });
             }
         }
@@ -650,6 +656,8 @@ mod tests {
             old: PKG2_VERSION.to_string(),
             new: PKG2_LOCK_VERSION.to_string(),
             suffix: None,
+            group: None,
+            is_dependency_group: false,
         }];
         print_diff(&changes);
     }

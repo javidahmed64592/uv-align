@@ -1,0 +1,23 @@
+[project]
+name = "sample-five"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "requests>=2.28.0",
+]
+
+[project.optional-dependencies]
+http = [
+    "pytest-cov>=4.0.0",
+    "requests>=2.28.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=7.0.0",
+    "requests>=2.28.0",
+]
+test = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+]
