@@ -237,15 +237,12 @@ fn replace_in_array(item: &mut Item, name: &str, new_spec: &str) {
         return;
     };
 
-    let Some(idx) = array
-        .iter()
-        .position(|v| {
-            v.as_str().is_some_and(|s| {
-                parse_pep508_string(s, None, false)
-                    .is_some_and(|d| d.normalised_name == normalise_dependency_name(name))
-            })
+    let Some(idx) = array.iter().position(|v| {
+        v.as_str().is_some_and(|s| {
+            parse_pep508_string(s, None, false)
+                .is_some_and(|d| d.normalised_name == normalise_dependency_name(name))
         })
-    else {
+    }) else {
         return;
     };
 
