@@ -239,7 +239,12 @@ fn replace_in_array(item: &mut Item, name: &str, new_spec: &str) {
 
     let Some(idx) = array
         .iter()
-        .position(|v| v.as_str().is_some_and(|s| s.contains(name)))
+        .position(|v| {
+            v.as_str().is_some_and(|s| {
+                parse_pep508_string(s, None, false)
+                    .is_some_and(|d| d.normalised_name == normalise_dependency_name(name))
+            })
+        })
     else {
         return;
     };
@@ -273,7 +278,13 @@ pub fn apply_changes(
     })?;
 
     for change in changes {
-        let Some(dep) = deps.iter().find(|d| d.name == change.name) else {
+        // Match on name *and* group so a dependency listed in several groups
+        // has each occurrence updated, not just the first.
+        let Some(dep) = deps.iter().find(|d| {
+            d.name == change.name
+                && d.group == change.group
+                && d.is_dependency_group == change.is_dependency_group
+        }) else {
             continue;
         };
 
@@ -425,5 +436,48 @@ mod tests {
     fn test_parse_empty() {
         assert!(parse_pep508_string("", None, false).is_none());
         assert!(parse_pep508_string("   ", None, false).is_none());
+    }
+
+    #[test]
+    fn test_apply_changes_updates_all_groups() {
+        let dir = std::env::temp_dir().join(format!("uv-align-multi-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let path = dir.join("pyproject.toml");
+        std::fs::write(
+            &path,
+            r#"[project]
+name = "x"
+dependencies = ["pytest-cov>=1.0", "requests>=2.0"]
+
+[project.optional-dependencies]
+test = ["requests>=2.0"]
+
+[dependency-groups]
+dev = ["requests>=2.0"]
+"#,
+        )
+        .unwrap();
+
+        let deps = read_dependencies(&path).unwrap();
+        let changes: Vec<DependencyChange> = deps
+            .iter()
+            .filter(|d| d.name == "requests")
+            .map(|d| DependencyChange {
+                name: d.name.clone(),
+                operator: d.operator.clone(),
+                old: "2.0".into(),
+                new: "2.5".into(),
+                suffix: d.suffix.clone(),
+                group: d.group.clone(),
+                is_dependency_group: d.is_dependency_group,
+            })
+            .collect();
+        assert_eq!(changes.len(), 3);
+
+        apply_changes(&path, &changes, &deps).unwrap();
+        let out = std::fs::read_to_string(&path).unwrap();
+        assert_eq!(out.matches("requests>=2.5").count(), 3);
+        assert!(out.contains("pytest-cov>=1.0"));
+        std::fs::remove_dir_all(&dir).ok();
     }
 }
